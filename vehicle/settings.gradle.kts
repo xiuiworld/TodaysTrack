@@ -5,3 +5,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "TodaysTrack"
 include(":app")
+include(":music-core")
+project(":music-core").projectDir=file("../music-core")

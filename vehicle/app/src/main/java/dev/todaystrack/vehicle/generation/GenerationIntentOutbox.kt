@@ -33,6 +33,8 @@ data class Track(
 
 @Dao
 interface GenerationDao {
+    @Query("SELECT * FROM generation_intents WHERE id=:id") suspend fun byId(id: String): GenerationIntent?
+    @Query("SELECT * FROM tracks WHERE jobId=:id") suspend fun trackForJob(id: String): Track?
     @Query("SELECT * FROM generation_intents WHERE sessionId = :sessionId LIMIT 1") suspend fun forSession(sessionId: String): GenerationIntent?
     @Insert suspend fun insert(intent: GenerationIntent)
     @Update suspend fun update(intent: GenerationIntent)
@@ -43,11 +45,13 @@ interface GenerationDao {
 }
 
 class GenerationIntentOutbox(private val db: CaptureDatabase, private val identity: DevelopmentIdentity) {
-    suspend fun freeze(sessionId: String): GenerationIntent = db.withTransaction {
+    suspend fun freeze(sessionId: String,preferences: dev.todaystrack.music.MusicPreferences?=null,
+        materials: List<dev.todaystrack.music.MaterialFact> = emptyList(),mediaIds: List<String> = emptyList()): GenerationIntent = db.withTransaction {
         db.generationDao().forSession(sessionId)?.let { return@withTransaction it }
         val session = db.captureDao().session(sessionId)
-        val json = InputSnapshotBuilder().build(session, db.captureDao().events(sessionId), db.captureDao().gaps(sessionId), identity.deviceId).toString()
-        GenerationIntent(UUID.randomUUID().toString(), sessionId, DevelopmentIdentity.sha256(json.toByteArray(Charsets.UTF_8)), json)
+        val settings=VehicleMusicProjection.history(preferences ?: dev.todaystrack.music.MusicPreferences(genre=session.genre,lyricMode=dev.todaystrack.music.LyricMode.valueOf(session.lyricMode)),db.musicV2Dao().recent())
+        val frozen=VehicleMusicProjection.freeze(UUID.randomUUID().toString(),session,db.captureDao().events(sessionId),db.captureDao().gaps(sessionId),db.captureDao().epochsForSession(sessionId),identity.deviceId,settings,materials,mediaIds)
+        GenerationIntent(frozen.id, sessionId, frozen.inputHash, frozen.payload)
             .also { db.generationDao().insert(it) }
     }
 }

@@ -31,6 +31,8 @@ android {
     }
 }
 dependencies {
+    implementation(project(":music-core"))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("ai.pleos.playground:Vehicle:2.3.2")
     implementation("ai.pleos.playground:FusedLocation:1.1.3")
     implementation("androidx.core:core-ktx:1.16.0")

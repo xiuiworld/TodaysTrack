@@ -4,6 +4,30 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class JourneySummaryBuilderTest {
+    @Test fun odometerRegressionAndNegativeElapsedCannotContributeContinuousDistance() {
+        for ((older, newer) in listOf(2000L to 1000L, -1L to 1000L)) {
+            val result = JourneySummaryBuilder().build(listOf(
+                Fact(1,"e","boot",older,"ODOMETER","VALID",km=100.0),
+                Fact(2,"e","boot",newer,"ODOMETER","VALID",km=108.0),
+                Fact(3,"e","boot",3000,"ODOMETER","VALID",km=109.0)), 0)
+            // The invalid pair contributes nothing. A new forward pair may start at seq 2.
+            assertEquals(1.0, result.continuousDistanceKm, 0.0)
+        }
+    }
+
+    @Test fun explicitOdometerGapCannotBeCountedAsContinuousButLocationOnlyGapCan() {
+        val events = listOf(
+            Fact(1,"e","boot",100,"ODOMETER","VALID",km=100.0),
+            Fact(2,"e","boot",200,"LOCATION","FRESH",lat=37.0,lon=127.0),
+            Fact(3,"e","boot",300,"LOCATION","FRESH",lat=37.1,lon=127.1),
+            Fact(4,"e","boot",400,"ODOMETER","VALID",km=108.0),
+            Fact(5,"e","boot",500,"ODOMETER","VALID",km=109.0))
+        val builder = JourneySummaryBuilder()
+        assertEquals(1.0, builder.build(events,1,listOf(LocationGapBoundary(1,4,"ODOMETER"))).continuousDistanceKm,0.0)
+        assertEquals(9.0, builder.build(events,1,listOf(LocationGapBoundary(1,4,"LOCATION"))).continuousDistanceKm,0.0)
+        assertEquals(0.0, builder.build(events,1,listOf(LocationGapBoundary(1,null,"LOCATION|ODOMETER"))).continuousDistanceKm,0.0)
+    }
+
     // Unknown identifiers cannot prove a shared odometer or elapsed-time domain.
     @Test fun blankAndCaseInsensitiveUnknownIdentitiesContributeNoDistanceOrTimeSpan() {
         for ((epoch, boot) in listOf("e" to "", "e" to "UNKNOWN", "" to "boot", "UNKNOWN" to "boot")) {

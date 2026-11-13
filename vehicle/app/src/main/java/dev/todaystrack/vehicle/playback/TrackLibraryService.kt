@@ -53,7 +53,7 @@ class TrackLibraryService : MediaLibraryService() {
     override fun onDestroy() { session.release();player.release();scope.cancel();super.onDestroy() }
     companion object {
         fun mediaItem(track: Track): MediaItem = MediaItem.Builder().setMediaId(track.id).setUri(Uri.fromFile(File(track.path)))
-            .setMediaMetadata(MediaMetadata.Builder().setTitle(track.title).setArtist(if(track.provenance=="FIXTURE") "기존 음원 대역 · 새 생성 아님" else "AI 음악 · SDK 합성 주행 기록")
+            .setMediaMetadata(MediaMetadata.Builder().setTitle(track.title).setArtist(if(track.provenance in setOf("FIXTURE","LOCAL_TEST")) "기존 음원 대역 · 새 생성 아님" else "AI 음악 · SDK 합성 주행 기록")
                 .setIsPlayable(true).setIsBrowsable(false).setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC).build()).build()
     }
 }

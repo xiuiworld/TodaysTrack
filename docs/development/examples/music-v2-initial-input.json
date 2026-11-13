@@ -1,0 +1,379 @@
+{
+  "intentId": "roundtrip-original",
+  "operation": "INITIAL",
+  "coverage": [
+    {
+      "deviceId": "review-device",
+      "sessionId": "roundtrip",
+      "fromSeq": 1,
+      "toSeqExclusive": 11
+    }
+  ],
+  "features": {
+    "version": "features-v3",
+    "environment": "SIMULATED",
+    "metrics": {
+      "continuousDistanceKm": {
+        "value": 8.0,
+        "unit": "km",
+        "evidence": [
+          {
+            "source": "ODOMETER",
+            "fromSeq": 2,
+            "toSeq": 10,
+            "meaning": "continuous cumulative-distance difference",
+            "coverageRef": null
+          }
+        ]
+      },
+      "directionChangeDegrees": {
+        "value": 180.0133451025033,
+        "unit": "degrees",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 1,
+            "toSeq": 9,
+            "meaning": "observed point displacement, not road length",
+            "coverageRef": null
+          }
+        ]
+      },
+      "distanceEarlyFraction": {
+        "value": 0.25,
+        "unit": "fraction",
+        "evidence": [
+          {
+            "source": "ODOMETER",
+            "fromSeq": 2,
+            "toSeq": 4,
+            "meaning": "source-run phase interval; straddling boundaries unallocated",
+            "coverageRef": null
+          }
+        ]
+      },
+      "distanceLateFraction": {
+        "value": 0.5,
+        "unit": "fraction",
+        "evidence": [
+          {
+            "source": "ODOMETER",
+            "fromSeq": 7,
+            "toSeq": 10,
+            "meaning": "source-run phase interval; straddling boundaries unallocated",
+            "coverageRef": null
+          }
+        ]
+      },
+      "distanceMiddleFraction": {
+        "value": 0.0,
+        "unit": "fraction",
+        "evidence": []
+      },
+      "distanceUnallocatedPhaseFraction": {
+        "value": 0.25,
+        "unit": "fraction",
+        "evidence": [
+          {
+            "source": "ODOMETER",
+            "fromSeq": 4,
+            "toSeq": 7,
+            "meaning": "source-run phase interval; straddling boundaries unallocated",
+            "coverageRef": null
+          }
+        ]
+      },
+      "exactPositionRepeatFraction": {
+        "value": 0.5,
+        "unit": "fraction",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 1,
+            "toSeq": 1,
+            "meaning": "exact repeated coordinate; not a visit",
+            "coverageRef": null
+          },
+          {
+            "source": "LOCATION",
+            "fromSeq": 3,
+            "toSeq": 3,
+            "meaning": "exact repeated coordinate; not a visit",
+            "coverageRef": null
+          },
+          {
+            "source": "LOCATION",
+            "fromSeq": 5,
+            "toSeq": 5,
+            "meaning": "exact repeated coordinate; not a visit",
+            "coverageRef": null
+          },
+          {
+            "source": "LOCATION",
+            "fromSeq": 6,
+            "toSeq": 6,
+            "meaning": "exact repeated coordinate; not a visit",
+            "coverageRef": null
+          },
+          {
+            "source": "LOCATION",
+            "fromSeq": 8,
+            "toSeq": 8,
+            "meaning": "exact repeated coordinate; not a visit",
+            "coverageRef": null
+          },
+          {
+            "source": "LOCATION",
+            "fromSeq": 9,
+            "toSeq": 9,
+            "meaning": "exact repeated coordinate; not a visit",
+            "coverageRef": null
+          }
+        ]
+      },
+      "gapSpanningDistanceKm": {
+        "value": 0.0,
+        "unit": "km",
+        "evidence": []
+      },
+      "observedPointDisplacementMeters": {
+        "value": 56892.58978932464,
+        "unit": "m",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 1,
+            "toSeq": 9,
+            "meaning": "observed point displacement, not road length",
+            "coverageRef": null
+          }
+        ]
+      },
+      "observedSectionSpansMs": {
+        "value": 6000.0,
+        "unit": "ms",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 1,
+            "toSeq": 9,
+            "meaning": "observed position interval; no interpolated path",
+            "coverageRef": null
+          }
+        ]
+      },
+      "spatialExtentFromFirstMeters": {
+        "value": 28446.2846635827,
+        "unit": "m",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 1,
+            "toSeq": 9,
+            "meaning": "observed separation from first position; no path claim",
+            "coverageRef": null
+          }
+        ]
+      },
+      "startEndDistanceMeters": {
+        "value": 0.0,
+        "unit": "m",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 1,
+            "toSeq": 9,
+            "meaning": "endpoint separation, not home or confirmed return",
+            "coverageRef": null
+          }
+        ]
+      },
+      "unallocatedBoundaryDistanceKm": {
+        "value": 0.0,
+        "unit": "km",
+        "evidence": []
+      }
+    },
+    "sections": [
+      {
+        "id": "position-1-1",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 1,
+            "toSeq": 5,
+            "meaning": "observed position interval; no interpolated path",
+            "coverageRef": null
+          }
+        ],
+        "observedSpanMs": 2000,
+        "positionOrder": [
+          "A",
+          "B",
+          "C"
+        ],
+        "repeatedPositionSpanMs": 0,
+        "directionChangeDegrees": 0.036937359026069316
+      },
+      {
+        "id": "position-1-2",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 5,
+            "toSeq": 6,
+            "meaning": "observed position interval; no interpolated path",
+            "coverageRef": null
+          }
+        ],
+        "observedSpanMs": 2000,
+        "positionOrder": [
+          "C",
+          "C"
+        ],
+        "repeatedPositionSpanMs": 2000,
+        "directionChangeDegrees": null
+      },
+      {
+        "id": "position-1-3",
+        "evidence": [
+          {
+            "source": "LOCATION",
+            "fromSeq": 6,
+            "toSeq": 9,
+            "meaning": "observed position interval; no interpolated path",
+            "coverageRef": null
+          }
+        ],
+        "observedSpanMs": 2000,
+        "positionOrder": [
+          "C",
+          "B",
+          "A"
+        ],
+        "repeatedPositionSpanMs": 0,
+        "directionChangeDegrees": 0.03679815433724798
+      }
+    ],
+    "stateRuns": [],
+    "gapReasons": [],
+    "excluded": {},
+    "sourceStatuses": [
+      {
+        "source": "LOCATION",
+        "availability": "AVAILABLE",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "ODOMETER",
+        "availability": "AVAILABLE",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "SPEED",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "HEADING",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "ALTITUDE",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "STEERING",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "BRAKE",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "DRIVING_MODE",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "WIPER",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "LIGHT",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      },
+      {
+        "source": "GEAR",
+        "availability": "UNVERIFIED",
+        "receiptVerified": false,
+        "coverageRef": null
+      }
+    ],
+    "unknown": [
+      "driver emotion",
+      "companions",
+      "place names without supplied confirmation",
+      "events during gaps",
+      "true driving duration"
+    ],
+    "positionOrder": [
+      "A",
+      "B",
+      "C",
+      "C",
+      "B",
+      "A"
+    ],
+    "legacyReturnObserved": true
+  },
+  "preferences": {
+    "genre": "FUNK",
+    "allowedGenres": [
+      "POP",
+      "ELECTRONIC",
+      "FUNK",
+      "DREAM_POP",
+      "ROCK",
+      "RNB",
+      "JAZZ",
+      "AMBIENT"
+    ],
+    "excludedGenres": [],
+    "instruments": [],
+    "avoid": [],
+    "lyricMode": "VOCAL",
+    "language": "ko",
+    "durationSeconds": 90,
+    "variationId": "review-v2",
+    "recentGenres": [],
+    "recentArrangements": [],
+    "vocalStyle": []
+  },
+  "materials": [
+    {
+      "id": "memo-1",
+      "origin": "USER",
+      "text": "미뤄둔 일을 끝낸 날을 기억하고 싶다",
+      "allowedInLyrics": true
+    }
+  ],
+  "mediaIds": [],
+  "excludedMediaIds": []
+}
