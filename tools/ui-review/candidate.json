@@ -1,0 +1,5 @@
+{
+  "revision": "app-020",
+  "label": "화이트 · 버튼 표시 / 재생 정렬 보정",
+  "config": { "layout": "split", "font": 20, "gap": 16, "cover": 120, "button": 48, "tone": "porcelain", "renderer": "astryx-app-v10" }
+}

@@ -1,0 +1,10 @@
+{
+  "source": "0.3 browser reproduction before Astryx home",
+  "files": {
+    "index.html": "05497bf5c8b61cc5e3cbe54bd0081ef76ed38ac44dc55e4919a2126af8cb04f3",
+    "app.mjs": "eb98e5f6caaac7d77f7bb26f4f8682b5abdec68220654db4211cca56bfb933d4",
+    "model.mjs": "a4f0948d8103fc3c5facea3ca8559ae08635b9d5dbe2b235e3c594ae0c92519e",
+    "review.css": "250cadb60ea467920c56a906b78ebd1a2f2916a0bbc1900187ef64bc5aff3a2f",
+    "candidate.json": "421fea581123af7dfd96b893ba8a0bd3e825042875e73827368d1745151d66b5"
+  }
+}

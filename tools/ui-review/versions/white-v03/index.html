@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>오늘의 트랙 · UI 검토실</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./review.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="review-header">
+    <div class="brand"><span class="brand-mark">t.</span><div><strong>오늘의 트랙 <span>UI 검토실</span></strong><small>0.3.0-submission(4)에서 시작 · Android 반영 전</small></div></div>
+    <div class="header-actions"><button id="expand">화면 크게 보기</button><button id="apply-top" class="header-apply">적용</button><span class="local-badge"><i></i> LOCAL ONLY</span></div>
+  </header>
+  <main class="review-layout">
+    <aside class="inspector" aria-label="검토 도구">
+      <div class="section-label">01 / 상황 선택</div>
+      <h1>화면을 먼저,<br>직접 눌러보세요.</h1>
+      <p class="intro">기존 흰색 UI를 출발점으로 둡니다.<br>아래 도구는 검토실 전용입니다.</p>
+      <label for="scenario">기록 상태</label>
+      <select id="scenario">
+        <option value="empty">기록 없음</option><option value="capturing">수집 중</option>
+        <option value="pending">생성 대기</option><option value="uncertain">접수 불명</option>
+        <option value="saved" selected>저장 완료</option><option value="error">오류</option>
+      </select>
+      <label for="ux">CarUx 상태 모의</label>
+      <select id="ux"><option value="parked">정차 · 조작 가능</option><option value="restricted">조작 제한</option><option value="unknown">제한 확인 전</option></select>
+      <label for="provenance">곡의 출처 표시 모의</label>
+      <select id="provenance"><option value="FIXTURE">대역 · 새 AI 생성 아님</option><option value="AI">새 AI 음악 표시 (검토 예시)</option></select>
+      <div class="simulation-tools"><button id="resolve">저장 완료로 진행 모의</button><small>통신·생성 없이 화면 상태만 바꿉니다.</small></div>
+      <div class="section-label divider">02 / 수정안</div>
+      <label for="layout">배치</label><select id="layout"><option value="split">기준안 · 기록 / 상세 분할</option><option value="focus">상세 집중 · 기록 선택창</option></select>
+      <label for="font">본문 크기 <output id="font-value"></output></label><input id="font" type="range" min="16" max="24" step="1">
+      <label for="gap">주요 간격 <output id="gap-value"></output></label><input id="gap" type="range" min="12" max="32" step="2">
+      <label for="cover">표지 크기 <output id="cover-value"></output></label><input id="cover" type="range" min="120" max="220" step="10">
+      <label for="button">보이는 버튼 높이 <output id="button-value"></output></label><input id="button" type="range" min="40" max="64" step="2">
+      <label for="tone">색조</label><select id="tone"><option value="porcelain">기준안 · Porcelain</option><option value="warm">따뜻한 중성색</option><option value="ink">짙은 강조색</option></select>
+      <p class="hint">화면 안 버튼의 터치 영역은 최소 76 × 76 검토 단위를 유지합니다. 화면 맞춤 축소율과 Android dp는 다릅니다.</p>
+      <div class="edit-actions"><button id="baseline">기준값 불러오기</button><button id="apply" class="apply">적용</button></div>
+      <p id="draft-status" role="status" aria-live="polite">수정안 준비 중</p>
+      <details class="differences"><summary>Android와 무엇이 다른가요?</summary>
+        <p>현재 소스의 화면·문구·버튼 조건을 웹으로 재현했습니다. 픽셀 단위 일치나 Android 구현 완료를 뜻하지 않습니다.</p>
+        <ul><li>모든 날짜·거리·곡·작업 ID는 REVIEW 예시입니다. 실제 Room·곡 파일을 읽지 않습니다.</li><li>수집·권한·CarUx·생성·저장·오디오 재생은 모의입니다. 재생 소리는 없습니다.</li><li>CarUx 확인 전과 제한 시 시작·선택·설정·생성·재생을 막습니다. 기존 정책대로 수집 마무리·일시정지는 유지합니다.</li><li>브라우저 CSS px / 시스템 글꼴을 사용합니다. dp·차량 창·포커스·TalkBack·실제 제한·Media3는 Android에서 별도 확인해야 합니다.</li><li>적용은 이 검토 화면에만 반영합니다. 확인한 방향은 이후 Android Views에 반영하며 Compose로 전환하지 않습니다.</li></ul>
+      </details>
+    </aside>
+    <section class="review-workspace" aria-label="화면 미리보기">
+      <div class="preview-toolbar">
+        <div><span class="section-label">INTERACTIVE PREVIEW</span><h2 id="revision-title">현재안</h2></div>
+        <div class="preview-controls"><label>가용 창 <select id="viewport"><option value="1120">1120 × 760 · 넓은 창</option><option value="841">841 × 760 · 좁은 창</option><option value="1280">1280 × 800</option></select></label><label>비교 <select id="compare"><option value="none">현재안만</option><option value="baseline">0.3 기준안과 비교</option></select></label></div>
+      </div>
+      <div class="sample-banner"><span class="sample-dot"></span><strong>검토용 데이터</strong><span>날짜·거리·곡은 예시입니다. 실제 차량 기록과 연결되지 않습니다.</span></div>
+      <div class="canvas-tools"><label><input type="checkbox" id="hitboxes"> 터치 영역 표시</label><span id="scale-label"></span></div>
+      <div id="previews"></div>
+      <div class="review-caption"><span>화면 안에서 홈 · 기록 · 보관함과 주요 버튼을 눌러보세요.</span><span>표지: 기존 고정 장식 이미지 · 실제 주행 사진 아님</span></div>
+      <section class="activity"><div class="section-label">마지막 동작</div><p id="event-log" role="status" aria-live="polite">저장 완료 상태에서 시작합니다. 실제 곡을 재생하지 않습니다.</p></section>
+      <p class="review-footer">이 화면은 디자인과 사용 흐름 검토용입니다. 실제 제품 기능·SDK·음악 생성·Android 검증 결과로 취급하지 않습니다.</p>
+    </section>
+  </main>
+  <dialog id="modal"><div id="modal-content"></div></dialog>
+</body>
+</html>

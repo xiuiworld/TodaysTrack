@@ -1,0 +1,5 @@
+{
+  "revision": "review-001",
+  "label": "0.3 화면 재현 · 첫 검토",
+  "config": { "layout": "split", "font": 20, "gap": 20, "cover": 200, "button": 52, "tone": "porcelain" }
+}
