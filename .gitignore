@@ -1,0 +1,44 @@
+**/.gradle/
+**/.kotlin/
+**/build/
+**/.local/
+**/local.properties
+**/*.jks
+**/*.keystore
+**/*.p12
+**/*.dpapi
+/work/
+/submission/
+/apk/
+
+# Machine state, credentials and generated files stay local.
+**/__pycache__/
+**/*.py[cod]
+**/.idea/
+**/.vscode/
+**/.env
+**/.env.*
+**/*.pfx
+**/*.key
+**/*.db
+**/*.db-*
+**/*.sqlite
+**/*.sqlite3
+**/*.sqlite-*
+**/*.log
+**/*.apk
+**/*.aab
+**/*.hprof
+PROJECT_IDENTITY_GUIDE.md
+
+# Keep raw device records, captures and generated media outside Git.
+validation/evidence/
+validation/**/runs/
+validation/**/results/
+validation/**/*-latest.json
+validation/*-probe/latest-*.json
+validation/*-probe/release-setup.json
+# Separate upstream SDK sample checkouts are kept in the local workspace.
+/validation/vehicle-sample/
+/validation/fusedlocation-sample/
+docs/design/ui-concepts/

@@ -1,0 +1,5 @@
+.local/
+__pycache__/
+results/*/output.mp3
+results/*/output.mp3.part
+
