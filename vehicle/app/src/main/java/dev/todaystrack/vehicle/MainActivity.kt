@@ -59,7 +59,7 @@ class MainActivity : Activity(),SubmissionActions {
 
     override fun onCreate(savedInstanceState:Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor=Color.rgb(244,246,248);window.navigationBarColor=Color.rgb(244,246,248)
+        window.statusBarColor=Color.WHITE;window.navigationBarColor=Color.WHITE
         window.decorView.systemUiVisibility=View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
         page=ScreenPage.entries.firstOrNull { it.name==savedInstanceState?.getString("page") } ?: ScreenPage.HOME
         selectedId=savedInstanceState?.getString("selection")
@@ -110,7 +110,9 @@ class MainActivity : Activity(),SubmissionActions {
     }
     private fun render() {
         if(!::screen.isInitialized) return
-        screen.render(SubmissionUiState(page,(listOfNotNull(open)+sessions).map(::item),selectedId,
+        screen.render(SubmissionUiState(page,(listOfNotNull(open)+sessions).map { record ->
+            item(record).copy(distance=if(record.id==selectedId) summary.distance else summaries[record.id]?.distance)
+        },selectedId,
             summary.distance,summary.details,stateLabel(),intent?.state,intent?.mode in setOf("FIXTURE","LOCAL_TEST"),captureStatus,
             JourneyCaptureService.active.value,controls(),tracks,defaultsLabel(),message))
     }
@@ -206,44 +208,53 @@ class MainActivity : Activity(),SubmissionActions {
     override fun details() {
         if(selectedId==null) return
         val record=(listOfNotNull(open)+sessions).firstOrNull { it.id==selectedId } ?: return
-        showDialog("기록 상세",item(record).date+"\n${kind(record)} · ${record.genre} · ${lyrics(record.lyricMode)}\n\n"+
-            summary.details+"\n\n$counters\n$captureStatus\n\n합성 주행 환경 · 실제 Pleos SDK 수집\n기본 표지는 실제 주행 사진이 아닙니다.")
+        val body=UiDialogs.body(this).apply {
+            addView(UiDialogs.row(this@MainActivity,"기록 범위",kind(record)))
+            addView(UiDialogs.row(this@MainActivity,"기록 시각",item(record).date))
+            addView(UiDialogs.row(this@MainActivity,"연속 관측 거리",summary.distance.removePrefix("연속 관측 거리 ")))
+            addView(UiDialogs.row(this@MainActivity,"음악 설정","${record.genre} · ${lyrics(record.lyricMode)}"))
+            addView(UiDialogs.row(this@MainActivity,"음악 상태",stateLabel()))
+            if(intent?.mode in setOf("FIXTURE","LOCAL_TEST"))addView(UiDialogs.row(this@MainActivity,"출처","대역 · 새 AI 생성 아님"))
+            addView(UiDialogs.text(this@MainActivity,"관측이 끊긴 구간의 경로와 실제 운전 시간은 알 수 없어요."))
+            addView(UiDialogs.disclosure(this@MainActivity,"관측·음악 방향·가사 보기",summary.details))
+            addView(UiDialogs.disclosure(this@MainActivity,"수집 진단 보기","$counters\n$captureStatus\n합성 주행 환경 · 실제 Pleos SDK 수집\n기본 표지는 실제 주행 사진이 아닙니다."))
+        }
+        UiDialogs.show(this,"기록 정보",body)
     }
     private fun showDialog(title:String,text:String) {
-        val dialog=AlertDialog.Builder(this).setTitle(title).setMessage(text).setPositiveButton("닫기",null).create()
-        dialog.setOnShowListener { dialog.getButton(AlertDialog.BUTTON_POSITIVE).apply { minimumHeight=dp(76);minimumWidth=dp(76) } };dialog.show()
+        val body=UiDialogs.body(this).apply { addView(UiDialogs.text(this@MainActivity,text)) }
+        UiDialogs.show(this,title,body)
     }
     private fun dp(value:Int)=(value*resources.displayMetrics.density).toInt()
     override fun settings() {
         if(!controls().canChangeSettings) return
-        val fields=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(dp(24),dp(8),dp(24),dp(8)) }
-        val values=linkedMapOf<String,Pair<Spinner,Array<String>>>()
+        val fields=UiDialogs.body(this).apply { addView(UiDialogs.text(this@MainActivity,"다음 기록부터 적용됩니다.")) }
+        val values=linkedMapOf<String,Pair<UiDialogs.ChoiceField,Array<String>>>()
         fun field(key:String,title:String,options:Array<String>,labels:Array<String>) {
-            fields.addView(TextView(this).apply { text=title;textSize=18f;setTextColor(Color.rgb(100,113,125)) })
-            val spinner=Spinner(this).apply {
-                adapter=object:ArrayAdapter<String>(this@MainActivity,android.R.layout.simple_spinner_dropdown_item,labels) {
-                    override fun getDropDownView(position:Int,convertView:View?,parent:android.view.ViewGroup):View =
-                        super.getDropDownView(position,convertView,parent).apply { minimumHeight=dp(76);(this as? TextView)?.textSize=20f }
-                }
-                setSelection(options.indexOf(prefs.getString(key,if(key=="genre") "잔잔한 팝" else options.first())).coerceAtLeast(0));contentDescription=title
-            }
-            fields.addView(spinner,LinearLayout.LayoutParams(-1,dp(76)));values[key]=spinner to options
+            val selection=options.indexOf(prefs.getString(key,if(key=="genre") "잔잔한 팝" else options.first())).coerceAtLeast(0)
+            val choice=UiDialogs.choice(this,title,labels,selection)
+            fields.addView(choice);values[key]=choice to options
         }
         field("kind","기록 범위",arrayOf("DAY","TRIP"),arrayOf("하루 기록","여행 기록"))
         field("genre","음악 장르",arrayOf("AUTO","잔잔한 팝","어쿠스틱","일렉트로닉","FUNK","DREAM_POP","ROCK","RNB","JAZZ","AMBIENT"),
             arrayOf("자동","팝","어쿠스틱","일렉트로닉","펑크","드림 팝","록","R&B","재즈","앰비언트"))
         field("lyrics","가사",arrayOf("INSTRUMENTAL","VOCAL"),arrayOf("무가사","가사 있는 곡"))
-        val dialog=AlertDialog.Builder(this).setTitle("새 기록 설정").setView(fields).setNegativeButton("취소",null)
-            .setPositiveButton("저장") { _,_ -> if(controls().canChangeSettings) {
+        editingDialog=UiDialogs.show(this,"새 기록 설정",fields,"저장",true) {
+            if(controls().canChangeSettings) {
                 val edit=prefs.edit();values.forEach { (key,pair) -> edit.putString(key,pair.second[pair.first.selectedItemPosition]) };edit.apply();render()
-            } }.create()
-        editingDialog=dialog;dialog.setOnShowListener { for(button in listOf(AlertDialog.BUTTON_POSITIVE,AlertDialog.BUTTON_NEGATIVE)) dialog.getButton(button).apply { minimumHeight=dp(76);minimumWidth=dp(76) } };dialog.show()
+            }
+        }
     }
     override fun info() {
-        val dialog=AlertDialog.Builder(this).setTitle("오늘의 트랙 · ${BuildConfig.VERSION_NAME}")
-            .setMessage("합성 주행 환경 · 실제 Pleos SDK 수집\n생성에는 PC 로컬 서버가 필요합니다. 저장곡은 오프라인으로 감상할 수 있습니다.\n정확한 위치는 차량에 남습니다. 사진·메모 없이 사용할 수 있습니다.\n표지는 고정 기본 이미지입니다.")
-            .setPositiveButton("닫기",null).setNeutralButton("기기 연결 정보") { _,_ -> if(allowed) showDialog("개발 차량 공개 등록 정보",app.identity.publicRegistration().toString()) }.create()
-        dialog.setOnShowListener { for(button in listOf(AlertDialog.BUTTON_POSITIVE,AlertDialog.BUTTON_NEUTRAL)) dialog.getButton(button).apply { minimumHeight=dp(76);minimumWidth=dp(76) };dialog.getButton(AlertDialog.BUTTON_NEUTRAL).isEnabled=allowed };dialog.show()
+        val body=UiDialogs.body(this).apply {
+            addView(UiDialogs.text(this@MainActivity,"기록 시작 → 마감 → 음악 만들기\n만든 음악은 보관함에서 감상할 수 있어요."))
+            addView(UiDialogs.row(this@MainActivity,"차량에 보관","정밀 위치"))
+            addView(UiDialogs.row(this@MainActivity,"음악 제작에 전송","정밀 위치를 뺀 기록 요약"))
+            addView(UiDialogs.text(this@MainActivity,"차량 조작 제한에 따라 일부 버튼이 비활성화됩니다.\n생성에는 PC 로컬 서버가 필요하며 저장곡은 오프라인으로 감상할 수 있습니다.\n합성 주행 환경 · 실제 Pleos SDK 수집\n표지는 고정 기본 이미지입니다."))
+        }
+        UiDialogs.show(this,"오늘의 트랙 · ${BuildConfig.VERSION_NAME}",body,extra=if(allowed) "기기 연결 정보" to {
+            if(allowed) showDialog("개발 차량 공개 등록 정보",app.identity.publicRegistration().toString())
+        } else null)
     }
     private fun playback() {
         val media=controller
@@ -257,7 +268,10 @@ class MainActivity : Activity(),SubmissionActions {
             media.playbackState==Player.STATE_ENDED -> "$name · 재생을 마쳤습니다"
             else -> "$name · ${if(media.isPlaying) "재생 중" else "일시정지"} ${clock(media.currentPosition)} / ${clock(media.duration)}"
         }
-        screen.playback(PlaybackUiState(media?.currentMediaItem?.mediaId,label,media?.isPlaying==true))
+        screen.playback(PlaybackUiState(media?.currentMediaItem?.mediaId,label,media?.isPlaying==true,
+            positionMs=media?.currentPosition?.coerceAtLeast(0) ?: 0,
+            durationMs=media?.duration?.takeIf { it>0 },
+            notice=label.takeIf { media==null || media.playerError!=null || media.playbackState==Player.STATE_BUFFERING }))
     }
     override fun onStart() {
         super.onStart()
@@ -278,6 +292,8 @@ class MainActivity : Activity(),SubmissionActions {
         } },mainExecutor)
     }
     override fun onSaveInstanceState(out:Bundle) { super.onSaveInstanceState(out);out.putString("page",page.name);out.putString("selection",selectedId);screen.saveScroll(out) }
+    @Deprecated("Activity back navigation compatibility")
+    override fun onBackPressed() { if(!screen.back()) super.onBackPressed() }
     override fun onStop() { editingDialog?.dismiss();editingDialog=null;scope?.cancel();scope=null;controllerFuture?.let { MediaController.releaseFuture(it) };controllerFuture=null;controller=null;super.onStop() }
     override fun onDestroy() { ux?.unregisterListener();car?.disconnect();super.onDestroy() }
 }

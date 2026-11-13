@@ -13,6 +13,13 @@ android {
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { buildConfig = true }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            it.maxHeapSize = "1536m"
+            it.maxParallelForks = 1
+        }
+    }
     signingConfigs {
         if (System.getenv("TODAYSTRACK_SIGNING_STORE") != null) create("submission") {
             storeFile = file(System.getenv("TODAYSTRACK_SIGNING_STORE"))
@@ -44,4 +51,5 @@ dependencies {
     implementation("androidx.media3:media3-session:1.5.1")
     kapt("androidx.room:room-compiler:2.6.1")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }

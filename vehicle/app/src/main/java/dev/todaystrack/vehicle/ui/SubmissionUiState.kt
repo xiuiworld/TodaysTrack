@@ -3,7 +3,7 @@ package dev.todaystrack.vehicle.ui
 import dev.todaystrack.vehicle.generation.Track
 
 enum class ScreenPage(val label:String) { HOME("홈"), RECORDS("기록"), LIBRARY("보관함") }
-data class RecordItem(val id:String,val title:String,val date:String,val settings:String,val open:Boolean)
+data class RecordItem(val id:String,val title:String,val date:String,val settings:String,val open:Boolean,val distance:String?=null)
 data class SubmissionUiState(
     val page:ScreenPage=ScreenPage.HOME,
     val records:List<RecordItem> = emptyList(), val selectedId:String?=null,
@@ -13,7 +13,8 @@ data class SubmissionUiState(
     val controls:UiControls=UiControls(false,false,false,false,false,false,false,null),
     val tracks:List<Track> = emptyList(),val defaults:String="",val message:String?=null
 )
-data class PlaybackUiState(val trackId:String?=null,val label:String="저장된 곡을 선택해 주세요",val playing:Boolean=false)
+data class PlaybackUiState(val trackId:String?=null,val label:String="저장된 곡을 선택해 주세요",val playing:Boolean=false,
+    val positionMs:Long=0,val durationMs:Long?=null,val notice:String?=null)
 interface SubmissionActions {
     fun page(page:ScreenPage)
     fun select(id:String)

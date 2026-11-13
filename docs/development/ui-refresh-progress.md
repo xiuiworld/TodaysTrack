@@ -161,3 +161,34 @@ v3 영상89.01초·1920×1080, SHA256 `247d8b063b0fd7aaf98a01d2ee4235b605103cbaf
 - 두 크기에서 시작→마감→생성 확인→대기→모의 저장 완료→보관함 재생→음악 상세/일시정지→원래 기록/목록을 23개 배치로 관측했다. 가로 넘침 없음, 모든 위치 바는 하단 탐색 위, 확인 팝업은 프레임 안이다. 두 크기 모두 기록/보관함 행 폭·높이·제목 x/y, 두 상세 제목 y 차이가 0이며 목록 재생 전후 버튼 위치도 동일하다. 이후 비활성 hover 수정만 추가하고 최종 사용자 탭에서 전체 흐름을 다시 클릭했다. End로 1:30 위치 선택도 확인했다. 소리 재생/Android 실행 검증은 아니다.
 - 직전 app-017 소스/번들을 v9에 보존하고 실제 비교 프레임 로딩을 확인했다. 새 v10의 검토 도구 선택지 누락으로 중간 재적용 시 원래 렌더러로 돌아간 문제를 확인·수정했으며 최종 반복 적용은 최신 안을 유지한다. 최종 웹 빌드 성공, 모델 10개 통과, Astryx doctor 실패 0/기존 Windows shim 경고 1이다.
 - 기존 실제 기록·곡·고정 입력·작업 ID·기획 원문 두 개·설계 v0.2·7번 공란·후속 계획은 유지한다. 앱/에뮬레이터/음악 서버/유료 호출/업로드/배포/push/Guard/훅/상주 작업자/개인 메모리/Windroid 작업은 없다.
+
+
+## 2026-11-14 · Android Views 이식 실행 범위
+
+사용자 실행 지시: “그럼 검토안 커밋해서 보존하고 ui-review에 최신 main 반영한 다음, 확정한 UI를 Android Views에 이식해줘. 기존 로직이랑 데이터 유지하고 앱·에뮬레이터·음악 서버는 실행하지 말고 빌드랑 테스트까지 해줘.” 최신 보정: “너는 UI만 수정하는거지 로직은 건들지 마”.
+
+- [x] 검토안 app-020을 보존 커밋 5f45514로 저장. node_modules/빌드 출력/로컬 상태는 제외.
+- [x] main f7672ac을 ui-review에 병합(988bbcd). main과 logic-review는 수정하지 않음.
+- [x] 홈·기록 목록/상세·보관함 목록/음악 상세·설정/안내/기록 정보/생성 확인을 Android Views에 이식. 소스: tools/astryx-lab/src/review와 tools/ui-review/assets/todays-track-mark.svg.
+- [x] SubmissionScreen/표시 전용 UiComponents·UiDialogs·UiPresentation·SubmissionUiState 및 MainActivity 표시/기존 이벤트 연결만 검토. 실제 데이터와 기존 콜백을 사용하고 예시 날짜/거리/1:30/모의 완료 버튼은 제품에 이식하지 않음.
+- [x] 빌드·기존 단위 검사·호스트 Views 배치/탐색/제한/팝업 검사·lint를 실행하고 수정 범위를 대조.
+
+구속 조건: 수집·요약·생성·인증·Room·서버·재생 처리 로직, UiPolicy, 실제 기록/곡/고정 입력/작업 ID와 기존 v1/v2 경계는 수정하지 않는다. 기획서 두 개·설계 v0.2·7번 공란·후속 계획은 유지한다. Compose 전환, 추가 유료 호출, 앱/에뮬레이터/음악 서버 실행, 제출 패키지/영상, 외부 업로드/배포/push, Guard/훅/상주 작업자/추가 에이전트/개인 메모리/Windroid 작업을 하지 않는다.
+
+실제 MediaController의 위치/길이는 표시 모델에 읽기 전용으로 투영한다. 기존 재생 메서드와 일시정지 메서드를 변경하지 않는다. 브라우저의 드래그 탐색과 같은 곡 재개 방식은 기존 처리 변경이 필요하므로 이 이식에 포함하지 않음을 사용자에게 먼저 알렸다. 로직이 그대로인 재생 버튼의 기존 동작을 UI 변경으로 해결됐다고 주장하지 않는다.
+
+검사 준비: Robolectric 4.14.1을 testImplementation으로만 추가. API35/JDK17/현재 Gradle8.10.2와 맞는 고정 버전이며 앱 런타임 의존성이 아니다. 실제 TodaysTrackApplication/MainActivity 대신 순수 Application/프레임워크 Activity와 가짜 SubmissionActions만 쓴다. 설치/기동/SDK/Room/미디어 연결/네트워크 호출은 하지 않는다. 공식 근거: https://robolectric.org/compatibility_table/ 및 https://robolectric.org/getting-started/ . 기존 화면에서 새 UI 요구 검사 5개가 실패하는 것을 확인하고 XML을 .local/android-ui-port/red에 보존했다.
+
+파일 책임: UiComponents는 버튼/아이콘/실제 위치 표시, UiDialogs는 패널/선택 UI, UiPresentation은 문구/표시 분기, SubmissionScreen은 페이지와 로컬 상세 탐색이다. MainActivity의 controls/readData/musicDetails/start/finish/generate/play/pause/onStart 로직은 보존 대조한다. 기록의 거리는 기존 요약 캐시/현재 선택 요약에 있는 값만 표시하며 미확인 값은 확인 전으로 남긴다.
+
+
+### Android 이식 최종 결과
+
+- 실제 Android Views로 헤더/로고/i·설정 그룹/하단 탐색, 홈, 공통 기록·보관함 목록, 기록 상세, 별도 음악 상세와 큰 커버, 분리된 작은 남색 재생 버튼·실제 위치 바를 구현했다. 생성 확인/설정/이용 안내/기록 정보는 공통 흰색 패널을 사용한다. 기록 정보의 관측·음악 방향·반환 가사와 수집 진단은 펼쳐 볼 수 있으며 원래 설명을 버리지 않았다.
+- 새 core의 장르 10개/기존 기본값/설정 저장 콜백, 생성 보류·확인 상태를 유지한다. 로딩을 빈 기록으로 표시하지 않고 읽기·재생 실패를 모든 페이지의 공통 상태 영역에 표시한다. 활성 수집 상태, 마감 전 기록, FIXTURE/LOCAL_TEST 대역 표시를 구분한다. 테스트의 날짜/ID/123초는 test 소스에만 있고 제품에는 실제 RecordItem/Track/MediaController 값을 표시한다.
+- MediaController 위치·길이를 읽는 표시 모델 필드만 추가했다. 막대를 드래그하는 seek와 같은 곡 재개 정책은 새로 구현하지 않았다. play/pause 및 기존 실제 첫 클릭 처리 코드는 main과 동일하며 기존 첫 클릭 보류 이력을 해결했다고 주장하지 않는다.
+- 최종 명령: `. ./tools/Use-SubmissionToolchain.ps1` 후 `./vehicle/gradlew.bat -p vehicle :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --offline --no-daemon --max-workers=2`. 기존 32개 + 새 호스트 Views 14개 = 46개, 실패/오류/건너뜀0. debug APK 빌드 성공, lint 오류0/경고11. 프로그래밍 생성 View 생성자 경고와 기존 Manifest/자원/도구 경고는 보존했다.
+- 두 참조 크기 841×605/1682×1210에서 목록 제목 위치 일치, 홈 주 버튼 위치 유지와 터치 영역/가로 경계를 측정했다. 호스트 검사에는 상세/뒤로가기·상태 복원, 장르 10개와 취소, 생성 확인/취소/제한 시 닫기, 실제 2:03/0:45 표시, 제한 중 pause 유지·새 play 차단, 신형 상태/미확인 상태와 대역·수집/로딩/오류 표시가 포함된다. 실제 차량 앱을 띄운 검사나 음원 재생/SDK/HTTPS end-to-end 검사가 아니다.
+- 자체 검토에서 미확인 상태를 생성 대기로 표시하던 분기, 다른 선택 기록과 상세 정보가 어긋날 수 있는 표시, 목록에서 빠진 오류, 로딩 중 홈의 빈 기록 문구, 대역/수집 상태 누락을 보정했다. 중간 컴파일 전후 소스가 섞인 실패를 분리한 뒤 소스를 고정해 다시 검사했다. 마지막 빌드 입력 42개 해시 변화0을 확인했다. 최초/중간 실패 XML은 .local/android-ui-port/red에 남겼다.
+- main 기준 core/server/수집/요약/생성/인증/Room/재생 서비스·Manifest·기존 표지 등 보호 파일 78개는 동일하다. 별도로 진행 문서 이외 docs 전체와 5f45514의 브라우저 검토 소스가 동일함을 대조했다. MainActivity의 controls/읽기/투영/수집/생성/play/pause/수명 등 22개 기존 메서드도 그대로다. 설정 선택 값/순서 및 저장 콜백도 원래 값을 유지한다. MainActivity 변경은 표시/패널/기존 이벤트·뒤로가기 연결이다.
+- 최종 근거: `.local/android-ui-port/verification.json`, `source-preservation.json`, `frozen-build-inputs.json`, `complete-build-test-lint.log`, 차량 JUnit XML 및 lint XML. 설치하지 않은 debug APK SHA256은 verification.json에 기록했다. 앱·에뮬레이터·음악 서버/추가 유료 API/업로드/배포/push/Guard/훅/상주 작업자/개인 메모리/Windroid 실행은 없다. 사용자 DB·실제 곡/SDK 원본을 열거나 재작성하지 않았다. main/logic-review는 그대로 유지한다.
