@@ -15,6 +15,6 @@ class TodaysTrackApplication : Application() {
         CoroutineScope(SupervisorJob()+Dispatchers.IO).launch { GenerationOutboxWorker.recoverPending(this@TodaysTrackApplication) }
     }
     val database: CaptureDatabase by lazy {
-        Room.databaseBuilder(this, CaptureDatabase::class.java, "todaystrack.db").addMigrations(CaptureDatabase.MIGRATION_1_2).build()
+        Room.databaseBuilder(this, CaptureDatabase::class.java, "todaystrack.db").addMigrations(CaptureDatabase.MIGRATION_1_2,CaptureDatabase.MIGRATION_2_3).build()
     }
 }

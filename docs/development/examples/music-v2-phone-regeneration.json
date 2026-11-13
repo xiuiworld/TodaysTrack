@@ -1,0 +1,31 @@
+{
+  "intentId": "phone-variation-2",
+  "operation": "REGENERATE",
+  "parentInputId": "REPLACE_WITH_ACCEPTED_INPUT_ID",
+  "preferences": {
+    "genre": "DREAM_POP",
+    "allowedGenres": [
+      "POP",
+      "ELECTRONIC",
+      "FUNK",
+      "DREAM_POP",
+      "ROCK",
+      "RNB",
+      "JAZZ",
+      "AMBIENT"
+    ],
+    "excludedGenres": [],
+    "instruments": [],
+    "avoid": [],
+    "lyricMode": "VOCAL",
+    "language": "ko",
+    "durationSeconds": 90,
+    "variationId": "phone-version-2",
+    "recentGenres": [],
+    "recentArrangements": [],
+    "vocalStyle": []
+  },
+  "materials": [],
+  "mediaIds": [],
+  "excludedMediaIds": []
+}

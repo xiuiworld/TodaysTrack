@@ -7,6 +7,9 @@ import dev.todaystrack.vehicle.TodaysTrackApplication
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.File
+import dev.todaystrack.music.musicJson
+import dev.todaystrack.vehicle.generation.v2.*
+import kotlinx.serialization.json.*
 
 /** Bounded deferred transport/download. It never directly calls a music provider. */
 class GenerationOutboxWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context,params) {
@@ -16,6 +19,9 @@ class GenerationOutboxWorker(context: Context, params: WorkerParameters) : Corou
         val sessionId=inputData.getString("sessionId") ?: return Result.failure()
         var intent=dao.forSession(sessionId) ?: return Result.failure()
         val api=GenerationApiClient(app,app.identity)
+        val protocol=runCatching { musicJson.parseToJsonElement(intent.payload).jsonObject.getValue("schemaVersion").jsonPrimitive.int }.getOrNull()
+        if(protocol==2) return runV2(app,intent,api)
+        if(protocol!=1) { dao.update(intent.copy(state="REQUEST_HELD",errorCode="UNSUPPORTED_FROZEN_INPUT_VERSION"));return Result.failure() }
         try {
             if(intent.state=="AVAILABLE") return Result.success()
             if(intent.jobId==null) {
@@ -77,6 +83,34 @@ class GenerationOutboxWorker(context: Context, params: WorkerParameters) : Corou
             dao.update(intent.copy(state=if(intent.jobId==null && intent.state in setOf("LOCAL_PENDING","PREPARING")) intent.state else "TRANSPORT_PENDING",errorCode=error.javaClass.simpleName))
             return if(runAttemptCount<2) Result.retry() else Result.failure()
         }
+    }
+    private suspend fun runV2(app: TodaysTrackApplication,intent: GenerationIntent,client: GenerationApiClient): Result {
+        val store=RoomVehicleMusicStore(app.database)
+        val api=object: VehicleMusicApi {
+            override suspend fun call(method: String,path: String,body: JsonObject?)=client.musicRequest(method,path,body)
+            override suspend fun audio(path: String,jobId: String,sha256: String,bytes: Long): SavedMusicAudio {
+                require(jobId.matches(Regex("[a-f0-9-]{36}")))
+                val file=File(app.filesDir,"tracks/v2/$jobId.mp3")
+                client.download(path,file,sha256,bytes)
+                val retriever=MediaMetadataRetriever()
+                val duration=try { retriever.setDataSource(file.absolutePath);retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L }
+                    catch(e: Exception) { throw IllegalArgumentException("LOCAL_AUDIO_UNREADABLE") } finally { retriever.release() }
+                return SavedMusicAudio(file.absolutePath,sha256,file.length(),duration)
+            }
+        }
+        val flow=VehicleMusicFlow(store,api)
+        repeat(60) {
+            when(flow.advance(intent.id)) {
+                FlowResult.COMPLETE,FlowResult.HELD -> return Result.success()
+                FlowResult.RETRY -> {
+                    val current=store.load(intent.id);val receipt=store.receipt(intent.id)
+                    return if(current.jobId!=null || receipt?.acceptanceUncertain==true || runAttemptCount<2) Result.retry() else Result.failure()
+                }
+                FlowResult.PENDING -> delay(3000)
+            }
+        }
+        // Keep the original remote job identity; scheduling again only polls that job.
+        return Result.retry()
     }
     companion object {
         suspend fun recoverPending(context: Context) {

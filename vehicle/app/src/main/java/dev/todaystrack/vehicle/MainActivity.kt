@@ -100,12 +100,18 @@ class MainActivity : Activity(),SubmissionActions {
         "VALIDATING","READY" -> "음원 검사·차량 저장 중"
         "RECONCILING" -> "접수·결과 확인 중 · 자동으로 다시 생성하지 않습니다"
         "AUTH_REQUIRED" -> "로컬 시연 연결 등록을 확인한 뒤 기존 작업을 확인해 주세요"
+        "BILLING_HELD" -> "생성 승인 대기 · 기록과 음악 방향은 보존됩니다"
+        "MATERIAL_REVIEW_REQUIRED" -> "선택 재료 확인 필요 · 자동으로 제외하거나 다시 생성하지 않습니다"
+        "REQUEST_HELD" -> "요청 확인 필요 · 입력과 기존 작업은 보존됩니다"
+        "PLAN_READY" -> "재료 분석 완료 · 음악 방향을 확인해 주세요"
+        "CANCELED" -> "작업이 취소되었습니다 · 기존 저장곡은 보존됩니다"
+        "DELETED" -> "삭제된 작업입니다 · 자동으로 다시 생성하지 않습니다"
         else -> "작업이 보류되었습니다 · 기록과 기존 작업은 보존됩니다"
     }
     private fun render() {
         if(!::screen.isInitialized) return
         screen.render(SubmissionUiState(page,(listOfNotNull(open)+sessions).map(::item),selectedId,
-            summary.distance,summary.details,stateLabel(),intent?.state,intent?.mode=="FIXTURE",captureStatus,
+            summary.distance,summary.details,stateLabel(),intent?.state,intent?.mode in setOf("FIXTURE","LOCAL_TEST"),captureStatus,
             JourneyCaptureService.active.value,controls(),tracks,defaultsLabel(),message))
     }
     private suspend fun readData()=refreshLock.withLock {
@@ -133,8 +139,28 @@ class MainActivity : Activity(),SubmissionActions {
                 .also { if(record.state=="SEALED") summaries[record.id]=it }
         }
         if(selectedId!=key) return@withLock
-        intent=nextIntent;summary=info;loaded=true;render()
+        val music=if(record==null) "" else musicDetails(record,nextIntent)
+        if(selectedId!=key) return@withLock
+        intent=nextIntent;summary=info.copy(details=info.details+music);loaded=true;render()
         if(!restored) { restored=true;screen.restoreAfterFirstRender() }
+    }
+    private suspend fun musicDetails(record: CaptureSession,frozen: GenerationIntent?): String {
+        return runCatching {
+            if(frozen!=null) {
+                val envelope=dev.todaystrack.music.musicJson.parseToJsonElement(frozen.payload) as kotlinx.serialization.json.JsonObject
+                if(envelope["schemaVersion"].toString()!="2") return@runCatching "\n\n기존 고정 입력과 원래 생성 작업으로 연결됩니다."
+                val receipt=app.database.musicV2Dao().receipt(frozen.id)
+                val direction=receipt?.plan?.let { VehicleMusicProjection.describePlan(dev.todaystrack.music.musicJson.parseToJsonElement(it) as kotlinx.serialization.json.JsonObject) }
+                    ?: VehicleMusicProjection.description(frozen.payload)
+                "\n\n$direction"+(frozen.errorCode?.let { "\n확인 상태: $it" } ?: "")+
+                    (receipt?.returnedLyrics?.takeIf { it.isNotBlank() }?.let { "\n\n반환 가사 · 실제 가창 대조 전\n$it" } ?: "")
+            } else if(record.state=="SEALED") {
+                val dao=app.database.captureDao()
+                val prefs=VehicleMusicProjection.history(dev.todaystrack.music.MusicPreferences(genre=record.genre,lyricMode=dev.todaystrack.music.LyricMode.valueOf(record.lyricMode)),app.database.musicV2Dao().recent())
+                val preview=VehicleMusicProjection.freeze("preview",record,dao.events(record.id),dao.gaps(record.id),dao.epochsForSession(record.id),app.identity.deviceId,prefs)
+                "\n\n미리보기 · "+VehicleMusicProjection.description(preview.payload)
+            } else ""
+        }.getOrElse { if(it is CancellationException) throw it;"\n\n음악 방향을 확인하지 못했습니다 · 원본 기록은 보존됩니다." }
     }
     private fun refresh() { scope?.launch { try { readData() } catch(c:CancellationException) { throw c } catch(e:Exception) {
         message="저장된 기록을 확인하지 못했습니다 · 기존 기록은 보존됩니다";render()
@@ -199,12 +225,13 @@ class MainActivity : Activity(),SubmissionActions {
                     override fun getDropDownView(position:Int,convertView:View?,parent:android.view.ViewGroup):View =
                         super.getDropDownView(position,convertView,parent).apply { minimumHeight=dp(76);(this as? TextView)?.textSize=20f }
                 }
-                setSelection(options.indexOf(prefs.getString(key,options.first())).coerceAtLeast(0));contentDescription=title
+                setSelection(options.indexOf(prefs.getString(key,if(key=="genre") "잔잔한 팝" else options.first())).coerceAtLeast(0));contentDescription=title
             }
             fields.addView(spinner,LinearLayout.LayoutParams(-1,dp(76)));values[key]=spinner to options
         }
         field("kind","기록 범위",arrayOf("DAY","TRIP"),arrayOf("하루 기록","여행 기록"))
-        field("genre","음악 장르",arrayOf("잔잔한 팝","어쿠스틱","일렉트로닉"),arrayOf("잔잔한 팝","어쿠스틱","일렉트로닉"))
+        field("genre","음악 장르",arrayOf("AUTO","잔잔한 팝","어쿠스틱","일렉트로닉","FUNK","DREAM_POP","ROCK","RNB","JAZZ","AMBIENT"),
+            arrayOf("자동","팝","어쿠스틱","일렉트로닉","펑크","드림 팝","록","R&B","재즈","앰비언트"))
         field("lyrics","가사",arrayOf("INSTRUMENTAL","VOCAL"),arrayOf("무가사","가사 있는 곡"))
         val dialog=AlertDialog.Builder(this).setTitle("새 기록 설정").setView(fields).setNegativeButton("취소",null)
             .setPositiveButton("저장") { _,_ -> if(controls().canChangeSettings) {

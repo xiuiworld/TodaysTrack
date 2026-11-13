@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
 import java.security.KeyStore
+import dev.todaystrack.server.music.*
 
 val json = Json { ignoreUnknownKeys = false }
 fun JsonObject.string(key: String): String = getValue(key).jsonPrimitive.content
@@ -30,20 +31,38 @@ fun main(args: Array<String>) {
         println("Explicit development CAR enrollment saved; no token/private key displayed.")
         store.close(); return
     }
+    if(args.firstOrNull()=="enroll-account-device") {
+        val record=json.parseToJsonElement(File(args[1]).readText()).jsonObject
+        require(record.keys==setOf("ownerId","deviceId","publicKey","role"))
+        store.enrollAccountDevice(record.string("ownerId"),record.string("deviceId"),record.string("publicKey"),record.string("role"))
+        println("Trusted account device enrollment saved; no private credential displayed.")
+        store.close();return
+    }
     val lockFile = RandomAccessFile(File(root,"server.lock"),"rw")
     val lock = lockFile.channel.tryLock() ?: error("Submission server already running")
     val password = System.getenv("TODAYSTRACK_TLS_PASSWORD")?.toCharArray() ?: error("TLS credential required")
     val keys=KeyStore.getInstance("PKCS12").apply { File(root,"tls/server.p12").inputStream().use { load(it,password) } }
     val auth=DeviceAuth(store)
     val worker=GenerationWorker(root,store)
+    val mediaKey=System.getenv("TODAYSTRACK_MEDIA_KEY_BASE64")?.let { java.util.Base64.getDecoder().decode(it).also { key->require(key.size==32) } }
+    val music=MusicService(root,ExecutionPolicy.read(root),mediaKey)
+    check((music.mediaProcessor as? SafeMediaProcessor)?.cleanAbandonedScratch()!=false) { "MEDIA_SCRATCH_CLEANUP_REQUIRED" }
+    val musicWorker=MusicPipeline(music,GoogleInteractionsTransport())
     store.recover()
     embeddedServer(Netty, applicationEngineEnvironment {
         log=LoggerFactory.getLogger("TodaysTrackServer")
         sslConnector(keys,"server",{ password },{ password }) { host="127.0.0.1";port=8443 }
         module {
             val workerJob=launch(Dispatchers.IO) { worker.run() }
-            environment.monitor.subscribe(ApplicationStopping) { workerJob.cancel();store.close(); lock.release();lockFile.close() }
+            val musicJob=launch(Dispatchers.IO) { while(isActive) { if(!musicWorker.processNext()) delay(1000) } }
+            environment.monitor.subscribe(ApplicationStopping) {
+                workerJob.cancel();musicJob.cancel()
+                // Finish an already transmitted bounded operation before releasing DB/instance ownership.
+                runBlocking { workerJob.join();musicJob.join() }
+                music.close();store.close();lock.release();lockFile.close()
+            }
             routing {
+                musicRoutes(music,auth)
                 route("/v1") {
                     suspend fun ApplicationCall.authorized(body: ByteArray): String? {
                         val headers=listOf("X-Device-Id","X-Timestamp","X-Nonce","X-Signature").associateWith { request.headers[it] ?: "" }

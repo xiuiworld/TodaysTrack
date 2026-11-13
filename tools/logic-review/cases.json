@@ -1,0 +1,533 @@
+{
+  "cases": [
+    {
+      "id": "roundtrip",
+      "title": "왕복 + 같은 위치 반복",
+      "origin": "합성 / 실제 주행 아님",
+      "question": "C의 같은 좌표 반복은 관측 근거다. 실제 정차·방문이라고 확정할 것인가?",
+      "events": [
+        {
+          "seq": 1,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 100000,
+          "receivedElapsedMs": 0,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 100000
+        },
+        {
+          "seq": 2,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100100,
+          "receivedElapsedMs": 100,
+          "quality": "VALID",
+          "odometerKm": 100
+        },
+        {
+          "seq": 3,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 101000,
+          "receivedElapsedMs": 1000,
+          "quality": "FRESH",
+          "latitude": 37.1,
+          "longitude": 127.1,
+          "sourceTimestampMs": 101000
+        },
+        {
+          "seq": 4,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 101100,
+          "receivedElapsedMs": 1100,
+          "quality": "VALID",
+          "odometerKm": 102
+        },
+        {
+          "seq": 5,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 102000,
+          "receivedElapsedMs": 2000,
+          "quality": "FRESH",
+          "latitude": 37.2,
+          "longitude": 127.2,
+          "sourceTimestampMs": 102000
+        },
+        {
+          "seq": 6,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 104000,
+          "receivedElapsedMs": 4000,
+          "quality": "FRESH",
+          "latitude": 37.2,
+          "longitude": 127.2,
+          "sourceTimestampMs": 104000
+        },
+        {
+          "seq": 7,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 104100,
+          "receivedElapsedMs": 4100,
+          "quality": "VALID",
+          "odometerKm": 104
+        },
+        {
+          "seq": 8,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 105000,
+          "receivedElapsedMs": 5000,
+          "quality": "FRESH",
+          "latitude": 37.1,
+          "longitude": 127.1,
+          "sourceTimestampMs": 105000
+        },
+        {
+          "seq": 9,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 106000,
+          "receivedElapsedMs": 6000,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 106000
+        },
+        {
+          "seq": 10,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 106100,
+          "receivedElapsedMs": 6100,
+          "quality": "VALID",
+          "odometerKm": 108
+        }
+      ]
+    },
+    {
+      "id": "legacy-stale",
+      "title": "기존 FRESH 중 지연된 원본",
+      "origin": "기존 ObservationFactsTest의 위험 조건 재구성",
+      "events": [
+        {
+          "seq": 1,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 130000,
+          "receivedElapsedMs": 30000,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 130000
+        },
+        {
+          "seq": 2,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 130100,
+          "receivedElapsedMs": 30100,
+          "quality": "FRESH",
+          "latitude": 37.1,
+          "longitude": 127.1,
+          "sourceTimestampMs": 110100
+        },
+        {
+          "seq": 3,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 131000,
+          "receivedElapsedMs": 31000,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 131000
+        }
+      ]
+    },
+    {
+      "id": "location-gap",
+      "title": "위치만 공백 · 거리는 계속 관측",
+      "origin": "합성 / 소스별 공백 검토",
+      "question": "위치 공백을 경로로 연결하면 안 된다. 정상 거리 관측은 유지해야 한다.",
+      "events": [
+        {
+          "seq": 1,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 100000,
+          "receivedElapsedMs": 0,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 100000
+        },
+        {
+          "seq": 2,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100100,
+          "receivedElapsedMs": 100,
+          "quality": "VALID",
+          "odometerKm": 100
+        },
+        {
+          "seq": 3,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 101000,
+          "receivedElapsedMs": 1000,
+          "quality": "VALID",
+          "odometerKm": 102
+        },
+        {
+          "seq": 4,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 102000,
+          "receivedElapsedMs": 2000,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 102000
+        }
+      ],
+      "gaps": [
+        {
+          "sourceMask": "LOCATION",
+          "lastDurableSeq": 1,
+          "firstAfterSeq": 4,
+          "reason": "LOCATION_INTERRUPTED"
+        }
+      ]
+    },
+    {
+      "id": "odometer-gap",
+      "title": "거리 공백 양끝의 증가",
+      "origin": "합성 / 연속거리와 공백 차이 구분",
+      "events": [
+        {
+          "seq": 1,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100000,
+          "receivedElapsedMs": 0,
+          "quality": "VALID",
+          "odometerKm": 100
+        },
+        {
+          "seq": 2,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 100100,
+          "receivedElapsedMs": 100,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 100100
+        },
+        {
+          "seq": 3,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 102000,
+          "receivedElapsedMs": 2000,
+          "quality": "FRESH",
+          "latitude": 37.1,
+          "longitude": 127.1,
+          "sourceTimestampMs": 102000
+        },
+        {
+          "seq": 4,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 102100,
+          "receivedElapsedMs": 2100,
+          "quality": "VALID",
+          "odometerKm": 108
+        }
+      ],
+      "gaps": [
+        {
+          "sourceMask": "ODOMETER",
+          "lastDurableSeq": 1,
+          "firstAfterSeq": 4,
+          "reason": "ODOMETER_INTERRUPTED"
+        }
+      ]
+    },
+    {
+      "id": "clock-regression",
+      "title": "같은 boot · 단조 시각 역행",
+      "origin": "합성 / 구현 결함 재현",
+      "events": [
+        {
+          "seq": 1,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 102000,
+          "receivedElapsedMs": 2000,
+          "quality": "VALID",
+          "odometerKm": 100
+        },
+        {
+          "seq": 2,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 101000,
+          "receivedElapsedMs": 1000,
+          "quality": "VALID",
+          "odometerKm": 108
+        },
+        {
+          "seq": 3,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 103000,
+          "receivedElapsedMs": 3000,
+          "quality": "VALID",
+          "odometerKm": 109
+        }
+      ]
+    },
+    {
+      "id": "reset-boot",
+      "title": "계기 리셋과 부팅 변경",
+      "origin": "기존 JourneySummaryBuilderTest.resetAndUnknownBootDoNotInflateDistance 조건",
+      "events": [
+        {
+          "seq": 1,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100000,
+          "receivedElapsedMs": 0,
+          "quality": "VALID",
+          "odometerKm": 200
+        },
+        {
+          "seq": 2,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100100,
+          "receivedElapsedMs": 100,
+          "quality": "RESET",
+          "odometerKm": 1
+        },
+        {
+          "seq": 3,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100200,
+          "receivedElapsedMs": 200,
+          "quality": "VALID",
+          "odometerKm": 2
+        },
+        {
+          "seq": 4,
+          "epochId": "e2",
+          "bootId": "unknown",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100300,
+          "receivedElapsedMs": 300,
+          "quality": "VALID",
+          "odometerKm": 10
+        },
+        {
+          "seq": 5,
+          "epochId": "e2",
+          "bootId": "unknown",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100400,
+          "receivedElapsedMs": 400,
+          "quality": "VALID",
+          "odometerKm": 20
+        }
+      ]
+    },
+    {
+      "id": "gps-jitter",
+      "title": "출발점 근처로 돌아왔지만 좌표가 다름",
+      "origin": "합성 / 제품 판단용",
+      "question": "현재 정확히 같은 좌표만 같은 위치다. 근처 귀환·머묾의 허용 범위는 새 임계값을 정하기 전 판단 필요.",
+      "events": [
+        {
+          "seq": 1,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 100000,
+          "receivedElapsedMs": 0,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 100000
+        },
+        {
+          "seq": 2,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 101000,
+          "receivedElapsedMs": 1000,
+          "quality": "FRESH",
+          "latitude": 37.1,
+          "longitude": 127.1,
+          "sourceTimestampMs": 101000
+        },
+        {
+          "seq": 3,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 102000,
+          "receivedElapsedMs": 2000,
+          "quality": "FRESH",
+          "latitude": 37.000001,
+          "longitude": 127.000001,
+          "sourceTimestampMs": 102000
+        }
+      ]
+    },
+    {
+      "id": "existing-order-test",
+      "title": "기존 순서·공백 단위 검증 사례",
+      "origin": "JourneySummaryBuilderTest.observedOrderKeepsReturnAndUnknownGapWithoutInventingVisits의 Fact 입력",
+      "events": [
+        {
+          "seq": 1,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 100100,
+          "receivedElapsedMs": 100,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 100100
+        },
+        {
+          "seq": 2,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100200,
+          "receivedElapsedMs": 200,
+          "quality": "VALID",
+          "odometerKm": 100
+        },
+        {
+          "seq": 3,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 100300,
+          "receivedElapsedMs": 300,
+          "quality": "FRESH",
+          "latitude": 37.1,
+          "longitude": 127.1,
+          "sourceTimestampMs": 100300
+        },
+        {
+          "seq": 4,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100400,
+          "receivedElapsedMs": 400,
+          "quality": "VALID",
+          "odometerKm": 102
+        },
+        {
+          "seq": 5,
+          "epochId": "e1",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 100500,
+          "receivedElapsedMs": 500,
+          "quality": "PRE_EPOCH",
+          "latitude": 37.2,
+          "longitude": 127.2,
+          "sourceTimestampMs": 100500
+        },
+        {
+          "seq": 6,
+          "epochId": "e2",
+          "bootId": "boot1",
+          "source": "LOCATION",
+          "receivedAtUtc": 100900,
+          "receivedElapsedMs": 900,
+          "quality": "FRESH",
+          "latitude": 37.0,
+          "longitude": 127.0,
+          "sourceTimestampMs": 100900
+        },
+        {
+          "seq": 7,
+          "epochId": "e2",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 100950,
+          "receivedElapsedMs": 950,
+          "quality": "VALID",
+          "odometerKm": 110
+        },
+        {
+          "seq": 8,
+          "epochId": "e2",
+          "bootId": "boot1",
+          "source": "ODOMETER",
+          "receivedAtUtc": 101000,
+          "receivedElapsedMs": 1000,
+          "quality": "VALID",
+          "odometerKm": 111
+        }
+      ],
+      "gaps": [
+        {
+          "sourceMask": "LOCATION",
+          "lastDurableSeq": 4,
+          "firstAfterSeq": 6,
+          "reason": "RECONSTRUCTED_TEST_BOUNDARY"
+        },
+        {
+          "sourceMask": "ODOMETER",
+          "lastDurableSeq": 4,
+          "firstAfterSeq": 7,
+          "reason": "RECONSTRUCTED_TEST_BOUNDARY"
+        }
+      ]
+    }
+  ]
+}

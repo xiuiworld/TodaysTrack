@@ -62,6 +62,15 @@ class JobStore(url: String, historicalMicros: Long = 0) : AutoCloseable {
     @Synchronized fun reservedMicros(): Long = row("SELECT reserved FROM budget WHERE id=1")!!.getValue("reserved")!!.toLong()
     @Synchronized fun enroll(id: String, publicKey: String) { execute("INSERT INTO devices VALUES(?,'submission-owner',?,'CAR') ON CONFLICT(id) DO UPDATE SET public_key=excluded.public_key", id, publicKey) }
     @Synchronized fun device(id: String): Map<String,String?>? = row("SELECT * FROM devices WHERE id=?", id)
+    /** Trusted administration only. No public route accepts an owner or device role from the client. */
+    @Synchronized fun enrollAccountDevice(owner: String,id: String,publicKey: String,role: String) {
+        require(owner.matches(Regex("[A-Za-z0-9_-]{1,100}")) && id.matches(Regex("[A-Za-z0-9_-]{1,80}")) && role in setOf("CAR","PHONE"))
+        val key=java.security.KeyFactory.getInstance("EC").generatePublic(java.security.spec.X509EncodedKeySpec(java.util.Base64.getDecoder().decode(publicKey)))
+        require((key as java.security.interfaces.ECPublicKey).params.curve.field.fieldSize>=256)
+        val previous=device(id)
+        require(previous==null || previous["owner"]==owner && previous["kind"]==role) { "DEVICE_IDENTITY_IMMUTABLE" }
+        execute("INSERT INTO devices VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET public_key=excluded.public_key",id,owner,publicKey,role)
+    }
     @Synchronized fun useNonce(device: String, nonce: String, time: Long): Boolean = transaction {
         execute("DELETE FROM nonces WHERE used_at < ?", System.currentTimeMillis()-600_000)
         execute("INSERT OR IGNORE INTO nonces VALUES(?,?,?)", device, nonce, time) == 1

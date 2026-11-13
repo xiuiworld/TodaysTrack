@@ -95,10 +95,20 @@ class JourneySummaryBuilder {
         }
         var distance = 0.0
         var prior: Fact? = null
+        val odometerGaps = locationGapBoundaries.filter { gap ->
+            gap.sourceMask.split('|').any { it.trim() == "ODOMETER" }
+        }
         for (e in ordered.filter { it.source == "ODOMETER" }) {
             val p = prior
             if (e.quality == "VALID" && !e.sourceError && p != null && e.epoch == p.epoch && e.boot == p.boot &&
                 e.boot.isKnownIdentity() && e.epoch.isKnownIdentity() &&
+                p.elapsed >= 0 && e.elapsed >= p.elapsed &&
+                // Gap-spanning differences are not continuous distance. Keep the raw endpoints;
+                // a separate scale-only projection can expose them without inventing a route.
+                odometerGaps.none { gap ->
+                    (gap.lastDurableSeq == null || gap.lastDurableSeq < e.seq) &&
+                        (gap.firstAfterSeq == null || gap.firstAfterSeq > p.seq)
+                } &&
                 e.km != null && p.km != null && e.km.isFinite() && p.km.isFinite() && e.km >= p.km && p.km >= 0) distance += e.km - p.km
             prior = if (e.quality in setOf("VALID", "RESET") && !e.sourceError && e.boot.isKnownIdentity() &&
                 e.epoch.isKnownIdentity() && e.km != null && e.km >= 0 && e.km.isFinite()) e else null

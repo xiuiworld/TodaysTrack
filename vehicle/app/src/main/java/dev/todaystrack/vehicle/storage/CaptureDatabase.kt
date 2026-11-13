@@ -67,11 +67,15 @@ data class CaptureGap(
     val endCertainty: String = "PENDING_VALID_OBSERVATION"
 )
 
-@Database(entities = [CaptureSession::class, CaptureEpoch::class, CaptureEvent::class, CaptureGap::class, GenerationIntent::class, Track::class], version = 2, exportSchema = false)
+@Database(entities = [CaptureSession::class, CaptureEpoch::class, CaptureEvent::class, CaptureGap::class, GenerationIntent::class, Track::class,MusicReceiptEntity::class], version = 3, exportSchema = false)
 abstract class CaptureDatabase : RoomDatabase() {
     abstract fun captureDao(): CaptureDao
     abstract fun generationDao(): GenerationDao
+    abstract fun musicV2Dao(): MusicV2Dao
     companion object {
+        val MIGRATION_2_3=object: Migration(2,3) {
+            override fun migrate(db: SupportSQLiteDatabase) { dev.todaystrack.vehicle.generation.v2.MusicReceiptSchema.statements.forEach { db.execSQL(it) } }
+        }
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE events ADD COLUMN sourceConfidence REAL")
