@@ -1,4 +1,4 @@
-param([switch]$EnableMusicKey, [string]$StateDirectory)
+param([switch]$EnableMusicKey, [string]$StateDirectory, [string]$FfmpegExecutable)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 . (Join-Path $projectRoot 'tools/Use-SubmissionToolchain.ps1')
@@ -27,7 +27,7 @@ try {
         $env:TODAYSTRACK_MEDIA_KEY_BASE64 = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($storagePointer)
     }
     $env:TODAYSTRACK_FIXTURE_AUDIO = Join-Path $PSScriptRoot 'fixtures/reference.mp3'
-    $env:TODAYSTRACK_FFMPEG = Join-Path $projectRoot 'tools/.local/media/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe'
+    $env:TODAYSTRACK_FFMPEG = if ($FfmpegExecutable) { (Resolve-Path -LiteralPath $FfmpegExecutable).Path } else { Join-Path $projectRoot 'tools/.local/media/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe' }
     & (Join-Path $PSScriptRoot 'build/install/TodaysTrackServer/bin/TodaysTrackServer.bat')
     exit $LASTEXITCODE
 } finally {

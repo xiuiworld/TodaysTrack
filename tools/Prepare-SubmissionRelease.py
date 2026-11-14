@@ -8,6 +8,7 @@ parser.add_argument('--apk',type=pathlib.Path,required=True)
 parser.add_argument('--verification',type=pathlib.Path,required=True)
 parser.add_argument('--video',type=pathlib.Path)
 parser.add_argument('--audio',type=pathlib.Path)
+parser.add_argument('--first-play-image',type=pathlib.Path)
 parser.add_argument('--source-only',action='store_true')
 parser.add_argument('--update-local-files',action='store_true')
 args=parser.parse_args();root=args.workspace_root.resolve()
@@ -52,7 +53,8 @@ with zipfile.ZipFile(source,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         z.writestr(info,data);inventory.append({'path':path,'bytes':size,'sha256':sha(data)})
     code_inventory=[x for x in inventory if x['path'].startswith(('vehicle/','server/','music-core/'))]
     tree=sha(''.join(x['path']+'\0'+x['sha256']+'\n' for x in code_inventory).encode())
-    z.writestr('source-inventory.json',json.dumps({'gitCommit':revision,'version':version,'versionCode':code,'buildInputTreeSha256':tree,'files':inventory},ensure_ascii=False,indent=2))
+    info=zipfile.ZipInfo('source-inventory.json',date_time=(2026,11,14,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16
+    z.writestr(info,json.dumps({'gitCommit':revision,'version':version,'versionCode':code,'buildInputTreeSha256':tree,'files':inventory},ensure_ascii=False,indent=2))
 proc.stdin.close();assert proc.wait(timeout=10)==0
 with zipfile.ZipFile(source) as z:assert z.testzip() is None
 if args.source_only:
@@ -62,6 +64,7 @@ assert verification['versionName']==version and verification['versionCode']==cod
 assert verification['signerSha256']=='56fd311ccd45d0dd255a6241701175f7a530a668cb243d609c51962d310c0490'
 shutil.copy2(args.apk,package/'apk/TodaysTrack-release.apk')
 (package/'evidence/release-verification.json').write_text(json.dumps(verification,ensure_ascii=False,indent=2),encoding='utf-8')
+if args.first_play_image:shutil.copy2(args.first_play_image,package/'evidence/first-play-0.4.png')
 for name in ['runbook.md','verification.md','manual-filming-guide.md']:
     (package/'docs'/name).write_bytes(git('show',revision+':docs/submission/'+name))
 if args.video:
