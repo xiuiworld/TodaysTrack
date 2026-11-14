@@ -13,6 +13,7 @@
 | [설치·실행 안내](submission/runbook.md) | 다른 PC의 준비·빌드·기기 연결, 기존 데이터 보존, 비용 없는 기본 실행 |
 | [검증 결과와 한계](submission/verification.md) | 실제 생성·저장·재생, 최종 앱 확인, 소스 재현 결과와 미검증 범위 |
 | [제출 체크리스트](submission/submission-checklist.md) | 공개 자료 경로와 사용자가 처리하는 공식 양식·접수의 경계 |
+| [접수 메일 초안](submission/email-template.md) | 제출 준비 대화에서 정리한 메일 문안·파일명. 개인정보는 실제 발송 전에 입력 |
 
 ## 현재 구현과 검증
 

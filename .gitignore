@@ -46,6 +46,7 @@ docs/design/ui-concepts/
 # Local editorial drafts and developer account selection; keep working copies.
 /_workspace/
 /.project-identity
+/tmp/
 
 # Explicitly publish only the verified contest APK.
 !/apk/
