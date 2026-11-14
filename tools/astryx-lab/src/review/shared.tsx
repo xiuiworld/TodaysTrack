@@ -11,10 +11,10 @@ export const channel='todaystrack-home-v1';
 export function send(action:string,value?:string){window.parent.postMessage({channel,type:'action',action,value},location.origin);}
 export function art(id:string){let hash=0;for(let i=0;i<id.length;i++)hash=(Math.imul(31,hash)+id.charCodeAt(i))|0;return `/assets/cover_${['concrete','curve','planes'][((hash%3)+3)%3]}.png`;}
 export const trackLabel=(track:any)=>track.title.replace(/\s*· 검토 예시$/,'');
-export const uiScale=(config:any)=>config.width>=1400?1.5:1;
+export const uiScale=(config:any)=>Math.max(1,Math.min((config.width||841)/841,(config.height||605)/605));
 export const frameStyle=(config:any):CSSProperties=>{
   const ui=uiScale(config);
-  return {'--tt-ui':ui,'--tt-hit':76*ui+'px','--tt-font':config.font*ui+'px','--tt-visible-button':config.button*ui+'px','--tt-cover':config.cover*ui+'px','--tt-gap':config.gap*ui+'px',fontFamily:'system-ui, "Malgun Gothic", sans-serif',backgroundColor:'var(--color-background-surface)',color:'var(--color-text-primary)'} as CSSProperties;
+  return {...Object.fromEntries([1,2,3,4,5,6,8].map(n=>['--spacing-'+n,4*n*ui+'px'])),'--tt-ui':ui,'--tt-hit':76*ui+'px','--tt-font':config.font*ui+'px','--tt-visible-button':config.button*ui+'px','--tt-cover':config.cover*ui+'px','--tt-gap':config.gap*ui+'px',fontFamily:'system-ui, "Malgun Gothic", sans-serif',backgroundColor:'var(--color-background-surface)',color:'var(--color-text-primary)'} as CSSProperties;
 };
 const palettes={porcelain:'#252a32',warm:'#695243',ink:'#314b72'};
 export const themes=Object.fromEntries(Object.entries(palettes).map(([name,accent])=>[name,defineTheme({
@@ -22,8 +22,8 @@ export const themes=Object.fromEntries(Object.entries(palettes).map(([name,accen
   tokens:{'--tt-player':'#263f65','--color-accent':accent,'--color-background-body':'#ffffff','--color-background-surface':'#ffffff','--color-background-card':'#ffffff','--color-text-primary':'#24282f','--color-text-secondary':'#59616b','--color-border':'#e2e5e9','--radius-container':'12px','--radius-element':'10px'},
   components:{
     button:{base:{minHeight:'var(--tt-hit, 76px)',minWidth:'var(--tt-hit, 76px)',padding:'0',border:'0',backgroundColor:'transparent',borderRadius:'12px',boxShadow:'none',height:'auto',whiteSpace:'normal'}},
-    text:{base:{fontFamily:'system-ui, "Malgun Gothic", sans-serif',fontSize:'var(--tt-font)',lineHeight:'1.45'},'type:supporting':{fontSize:'calc(var(--tt-font) - 4px)'},'type:label':{fontSize:'calc(var(--tt-font) - 2px)',fontWeight:'600'}},
-    heading:{base:{fontFamily:'system-ui, "Malgun Gothic", sans-serif',lineHeight:'1.3',textWrap:'balance',letterSpacing:'-.025em'},'level:1':{fontSize:'calc(var(--tt-font) * 1.2)'},'level:2':{fontSize:'calc(var(--tt-font) * 1.4)'},'level:3':{fontSize:'var(--tt-font)'}},
+    text:{base:{fontFamily:'system-ui, "Malgun Gothic", sans-serif',fontSize:'var(--tt-font)',lineHeight:'1.45'},'type:supporting':{fontSize:'calc(var(--tt-font) - 4px)',lineHeight:'1.45'},'type:label':{fontSize:'calc(var(--tt-font) - 2px)',lineHeight:'1.45',fontWeight:'600'}},
+    heading:{base:{fontFamily:'system-ui, "Malgun Gothic", sans-serif',lineHeight:'1.3',textWrap:'balance',letterSpacing:'-.025em'},'level:1':{fontSize:'calc(var(--tt-font) * 1.2)',lineHeight:'1.3'},'level:2':{fontSize:'calc(var(--tt-font) * 1.4)',lineHeight:'1.3'},'level:3':{fontSize:'var(--tt-font)',lineHeight:'1.3'}},
     thumbnail:{base:{borderRadius:'10px',outline:'1px solid var(--color-border)',outlineOffset:'-1px'}}
   }
 })]));

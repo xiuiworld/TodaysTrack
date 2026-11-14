@@ -5,6 +5,9 @@ import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import dev.todaystrack.vehicle.generation.Track
 import org.junit.Assert.*
 import org.junit.Test
@@ -62,6 +65,21 @@ class SubmissionScreenTest {
         assertTrue(tree(play).any { it.tag=="play-disc"&&it.width==44&&it.height==44 })
     }
 
+    @Test fun pleosGestureBarLeavesNavigationVisibleAndMusicColumnCentered() {
+        val screen=SubmissionScreen(RuntimeEnvironment.getApplication(),Events())
+        screen.render(state())
+        ViewCompat.dispatchApplyWindowInsets(screen,WindowInsetsCompat.Builder()
+            .setInsets(WindowInsetsCompat.Type.mandatorySystemGestures(),Insets.of(0,0,0,140)).build())
+        layout(screen,1682,1350)
+        assertEquals(140,screen.paddingBottom)
+        val home=named(screen,"홈")
+        assertEquals(1210,origin(home)[1]+home.height)
+        val hero=tree(screen).single { it.tag=="home-hero" }
+        val music=tree(screen).single { it.tag=="home-music" }
+        assertTrue(music.height<hero.height)
+        assertEquals((origin(hero)[1]+hero.height/2).toDouble(),(origin(music)[1]+music.height/2).toDouble(),1.0)
+    }
+
     @Test fun libraryOpensItsOwnDetailAndKeepsOriginalRecordLink() {
         val events=Events();val screen=SubmissionScreen(RuntimeEnvironment.getApplication(),events)
         screen.render(state(ScreenPage.LIBRARY));layout(screen)
@@ -94,13 +112,28 @@ class SubmissionScreenTest {
     }
 
     @Test fun recordsAndLibraryShareTitleCoordinatesAtBothWindowSizes() {
-        for((width,height) in listOf(841 to 605,1682 to 1210)) {
+        for((width,height) in listOf(841 to 605,1682 to 1210,2560 to 1440)) {
             val screen=SubmissionScreen(RuntimeEnvironment.getApplication(),Events())
             fun titleAt(page:ScreenPage):IntArray {
                 screen.render(state(page));layout(screen,width,height)
                 return origin(tree(screen).single { it.tag=="collection-title" })
             }
             assertArrayEquals(titleAt(ScreenPage.RECORDS),titleAt(ScreenPage.LIBRARY))
+        }
+    }
+
+    @Test fun collectionRowsMatchTheMeasuredBrowserSpacingAtPleosSize() {
+        val second=record.copy(id="second-record",date="11월 11일 · 11:50:00")
+        val data=state().copy(records=listOf(record,second),tracks=listOf(track,track.copy(id="second-track",sessionId=second.id)))
+        for(page in listOf(ScreenPage.RECORDS,ScreenPage.LIBRARY)) {
+            val screen=SubmissionScreen(RuntimeEnvironment.getApplication(),Events())
+            screen.render(data.copy(page=page));layout(screen,1682,1210)
+            val descriptions=if(page==ScreenPage.RECORDS) listOf("기록 상세 · ${record.title} · ${record.date}","기록 상세 · ${second.title} · ${second.date}")
+                else listOf("음악 상세 · ${track.title} · ${record.date}","음악 상세 · ${track.title} · ${second.date}")
+            val rows=descriptions.map { named(screen,it) }
+            assertEquals(345,origin(rows[0])[1]);assertEquals(240,rows[0].height)
+            assertEquals(602,origin(rows[1])[1]);assertEquals(240,rows[1].height)
+            assertEquals(200,origin(tree(screen).first { it.tag=="collection-title" })[0])
         }
     }
 
@@ -160,7 +193,7 @@ class SubmissionScreenTest {
         val cases=listOf(ready,sealed,sealed.copy(capturing=true,records=listOf(record.copy(open=true)),controls=sealed.controls.copy(capturing=true,hasOpen=true)),
             sealed.copy(intentState="ACCEPTANCE_UNCERTAIN"),sealed.copy(intentState="RECONCILING"),sealed.copy(records=emptyList(),selectedId=null),
             ready.copy(page=ScreenPage.RECORDS),ready.copy(page=ScreenPage.LIBRARY))
-        for((width,height) in listOf(841 to 605,1682 to 1210)) for(state in cases) {
+        for((width,height) in listOf(841 to 605,1682 to 1210,2560 to 1440)) for(state in cases) {
             val screen=SubmissionScreen(RuntimeEnvironment.getApplication(),Events());screen.render(state);layout(screen,width,height)
             val minimum=if(width==841)76 else 114
             tree(screen).filter { it.isClickable&&it.visibility==View.VISIBLE }.forEach { button->
@@ -172,7 +205,7 @@ class SubmissionScreenTest {
     }
 
     @Test fun homePrimaryStaysInPlaceAcrossCaptureSealedPendingAndSaved() {
-        for((width,height) in listOf(841 to 605,1682 to 1210)) {
+        for((width,height) in listOf(841 to 605,1682 to 1210,2560 to 1440)) {
             val ready=state();val sealed=ready.copy(intentState=null,tracks=emptyList(),controls=ready.controls.copy(intentState=null))
             val cases=listOf("기록 마감" to sealed.copy(capturing=true,records=listOf(record.copy(open=true)),controls=sealed.controls.copy(capturing=true,hasOpen=true)),
                 "음악 만들기" to sealed,"기존 작업 확인" to sealed.copy(intentState="ACCEPTANCE_UNCERTAIN",status="접수 여부 확인 중 · 원래 작업만 조회하며 새로 생성하지 않습니다"),"보관함으로" to ready)
@@ -180,7 +213,7 @@ class SubmissionScreenTest {
             val screen=SubmissionScreen(RuntimeEnvironment.getApplication(),Events())
             for((name,state) in cases) {
                 screen.render(state);layout(screen,width,height);val position=origin(named(screen,name))
-                if(first==null)first=position else assertArrayEquals(first,position)
+                if(first==null)first=position else assertArrayEquals("$width x $height / $name / metadata height ${tree(screen).single { it.tag=="home-meta" }.height}",first,position)
             }
         }
     }

@@ -16,6 +16,8 @@ const frozenJourney={id:'app-006-frozen',label:'수정 전 · 기록·상세·�
 const frozenConnection={id:'app-010-frozen',label:'수정 전 · 기록과 음악 연결',config:{...frozenApp.config,renderer:'astryx-app-v5'}};
 const frozenPanels={id:'app-012-frozen',label:'수정 전 · 음악 상세/팝업',config:{...frozenApp.config,renderer:'astryx-app-v6'}};
 const frozenPlayer={id:'app-013-frozen',label:'수정 전 · 재생 버튼/바',config:{...frozenApp.config,renderer:'astryx-app-v7'}};
+const frozenCollections={id:'app-021-frozen',label:'수정 전 · 목록/상세 간격',config:{...frozenApp.config,renderer:'astryx-app-v11'}};
+const frozenDevice={id:'app-020-frozen',label:'수정 전 · app-020',config:{...frozenApp.config,renderer:'astryx-app-v10'}};
 const frozenFlow={id:'app-017-frozen',label:'수정 전 · 홈 전환/버튼 반응',config:{...frozenApp.config,renderer:'astryx-app-v9'}};
 const frozenAlignment={id:'app-014-frozen',label:'수정 전 · 버튼 크기/목록',config:{...frozenApp.config,renderer:'astryx-app-v8'}};
 try {
@@ -74,9 +76,9 @@ function renderApp(config, width, height, readonly = false) {
 }
 let observer;
 const homeChannel='todaystrack-home-v1';
-const isAstryx = config => ['astryx-home-v1','astryx-home-v2','astryx-app-v3','astryx-app-v4','astryx-app-v5','astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10'].includes(config.renderer);
-const usesHome = config => ['astryx-app-v3','astryx-app-v4','astryx-app-v5','astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10'].includes(config.renderer)||isAstryx(config)&&state.page==='home';
-function viewportSize(){const width=Number($('viewport').value);return {width,height:width===1682?1210:605,density:width===1682?160:320};}
+const isAstryx = config => ['astryx-home-v1','astryx-home-v2','astryx-app-v3','astryx-app-v4','astryx-app-v5','astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10','astryx-app-v11','astryx-app-v12'].includes(config.renderer);
+const usesHome = config => ['astryx-app-v3','astryx-app-v4','astryx-app-v5','astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10','astryx-app-v11','astryx-app-v12'].includes(config.renderer)||isAstryx(config)&&state.page==='home';
+function viewportSize(){const width=Number($('viewport').value);return {width,height:width===2560?1440:width===1682?1210:605,density:width===841?320:160};}
 function updateFrame(frame) {
   frame.contentWindow?.postMessage({channel:homeChannel,type:'render',state,view,showDiagnostics:$('diagnostics').checked,isComparison:frame.title.startsWith('비교안'),config:JSON.parse(frame.dataset.config),hitboxes:$('hitboxes').checked},location.origin);
 }
@@ -105,13 +107,13 @@ function scaleWindows() {
     shell.closest('.preview-card').style.justifySelf='center';
     shell.style.height=`${height*scale}px`; shell.firstElementChild.style.transform=`scale(${scale})`;
   });
-  $('scale-label').textContent=`${width} × ${height}dp 참고 · 보존된 ${density}dpi 창 기준 · 맞춤 ${scales[0]||100}% · 기기 현재 측정 아님`;
+  $('scale-label').textContent=`${width} × ${height} 검토 단위 · ${density}dpi ${width===1682?'현재 Pleos 앱 영역':width===2560?'전체 화면 비교':'320dpi 참고 영역'} · 맞춤 ${scales[0]||100}% · 웹 데이터는 가상`;
 }
 function render() {
   $('source-note').textContent=state.provenance==='FIXTURE'?'출처 모의: 대역 · 새 AI 생성 아님':'출처 모의: AI 표시 · 실제 생성 없음';
   const {width,height}=viewportSize();
   const selected=$('compare').value;
-  const compared=selected==='baseline'?history[0]:selected===frozenApp.id?frozenApp:selected===frozenJourney.id?frozenJourney:selected===frozenConnection.id?frozenConnection:selected===frozenPanels.id?frozenPanels:selected===frozenPlayer.id?frozenPlayer:selected===frozenFlow.id?frozenFlow:selected===frozenAlignment.id?frozenAlignment:history.find(item=>item.id===selected);
+  const compared=selected==='baseline'?history[0]:selected===frozenApp.id?frozenApp:selected===frozenJourney.id?frozenJourney:selected===frozenConnection.id?frozenConnection:selected===frozenPanels.id?frozenPanels:selected===frozenPlayer.id?frozenPlayer:selected===frozenCollections.id?frozenCollections:selected===frozenDevice.id?frozenDevice:selected===frozenFlow.id?frozenFlow:selected===frozenAlignment.id?frozenAlignment:history.find(item=>item.id===selected);
   $('compare-toggle').textContent=compared?'비교 닫기':'기존 안 비교';
   $('compare-toggle').setAttribute('aria-pressed',String(!!compared));
   $('previews').classList.toggle('comparing',!!compared);
@@ -121,11 +123,11 @@ function render() {
     let card=existing.find(el=>el.dataset.revision===revision.id);
     if(!card){card=document.createElement('article');card.className='preview-card';card.dataset.revision=revision.id;card.innerHTML='<div class="preview-label"><strong></strong><small></small></div><div class="scaled-window"><div class="screen-scaler"></div></div>';}
     card.querySelector('strong').textContent=`${index?'비교안':'현재안'} · ${revision.label}`;
-    card.querySelector('small').textContent=isAstryx(revision.config)&&!['astryx-app-v3','astryx-app-v4','astryx-app-v5','astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10'].includes(revision.config.renderer)&&state.page!=='home'?'홈 외 화면은 기준안':index?(view.trackId&&!['astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10'].includes(revision.config.renderer)?'이전 안은 음악 상세 없이 목록 표시':'같은 상태로 비교'):'조작 가능';
+    card.querySelector('small').textContent=isAstryx(revision.config)&&!['astryx-app-v3','astryx-app-v4','astryx-app-v5','astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10','astryx-app-v11','astryx-app-v12'].includes(revision.config.renderer)&&state.page!=='home'?'홈 외 화면은 기준안':index?(view.trackId&&!['astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10','astryx-app-v11','astryx-app-v12'].includes(revision.config.renderer)?'이전 안은 음악 상세 없이 목록 표시':'같은 상태로 비교'):'조작 가능';
     const scaler=card.querySelector('.screen-scaler');
     if(usesHome(revision.config)){
       let frame=scaler.querySelector('.home-frame');
-      if(!frame){frame=document.createElement('iframe');frame.className='home-frame';frame.title=`${index?'비교안':'수정안'} · 오늘의 트랙`;frame.src=revision.config.renderer==='astryx-home-v1'?'/home-review/v1/index.html':revision.config.renderer==='astryx-home-v2'?'/home-review/v2/index.html':revision.config.renderer==='astryx-app-v3'?'/home-review/v3/index.html':revision.config.renderer==='astryx-app-v4'?'/home-review/v4/index.html':revision.config.renderer==='astryx-app-v5'?'/home-review/v5/index.html':revision.config.renderer==='astryx-app-v6'?'/home-review/v6/index.html':revision.config.renderer==='astryx-app-v7'?'/home-review/v7/index.html':revision.config.renderer==='astryx-app-v8'?'/home-review/v8/index.html':revision.config.renderer==='astryx-app-v9'?'/home-review/v9/index.html':'/home-review/index.html';scaler.replaceChildren(frame);frame.addEventListener('load',()=>updateFrame(frame));}
+      if(!frame){frame=document.createElement('iframe');frame.className='home-frame';frame.title=`${index?'비교안':'수정안'} · 오늘의 트랙`;frame.src=revision.config.renderer==='astryx-home-v1'?'/home-review/v1/index.html':revision.config.renderer==='astryx-home-v2'?'/home-review/v2/index.html':revision.config.renderer==='astryx-app-v3'?'/home-review/v3/index.html':revision.config.renderer==='astryx-app-v4'?'/home-review/v4/index.html':revision.config.renderer==='astryx-app-v5'?'/home-review/v5/index.html':revision.config.renderer==='astryx-app-v6'?'/home-review/v6/index.html':revision.config.renderer==='astryx-app-v7'?'/home-review/v7/index.html':revision.config.renderer==='astryx-app-v8'?'/home-review/v8/index.html':revision.config.renderer==='astryx-app-v9'?'/home-review/v9/index.html':revision.config.renderer==='astryx-app-v10'?'/home-review/v10/index.html':revision.config.renderer==='astryx-app-v11'?'/home-review/v11/index.html':'/home-review/index.html';scaler.replaceChildren(frame);frame.addEventListener('load',()=>updateFrame(frame));}
       frame.title=`${index?'비교안':'수정안'} · 오늘의 트랙`;
       frame.width=width;frame.height=height;frame.dataset.config=JSON.stringify({...revision.config,width,height});
       updateFrame(frame);
@@ -161,7 +163,7 @@ function syncScenarioSelector() { if([...$('scenario').options].some(o=>o.value=
 function log(message) { $('event-log').dataset.detail=message; $('event-log').textContent=message.split(' · ')[0].split('。')[0]; }
 function compareOptions() {
   const previous=$('compare').value;
-  $('compare').innerHTML='<option value="none">현재안만</option><option value="baseline">0.3 기준안과 비교</option><option value="app-017-frozen">수정 전 · 홈 전환/버튼 반응</option><option value="app-014-frozen">수정 전 · 버튼 크기/목록</option><option value="app-013-frozen">수정 전 · 재생 버튼/바</option><option value="app-012-frozen">수정 전 · 음악 상세/팝업</option><option value="app-010-frozen">수정 전 · 기록과 음악 연결</option><option value="app-006-frozen">수정 전 · 기록·상세·보관함</option><option value="app-004-frozen">직전 전체 화면 · app-004</option>'+history.filter(item=>item.id!=='baseline'&&item.id!==current.id).map(item=>`<option value="${escape(item.id)}">${escape(item.label)}</option>`).reverse().join('');
+  $('compare').innerHTML='<option value="none">현재안만</option><option value="baseline">0.3 기준안과 비교</option><option value="app-021-frozen">수정 전 · 목록/상세 간격</option><option value="app-020-frozen">수정 전 · app-020</option><option value="app-017-frozen">수정 전 · 홈 전환/버튼 반응</option><option value="app-014-frozen">수정 전 · 버튼 크기/목록</option><option value="app-013-frozen">수정 전 · 재생 버튼/바</option><option value="app-012-frozen">수정 전 · 음악 상세/팝업</option><option value="app-010-frozen">수정 전 · 기록과 음악 연결</option><option value="app-006-frozen">수정 전 · 기록·상세·보관함</option><option value="app-004-frozen">직전 전체 화면 · app-004</option>'+history.filter(item=>item.id!=='baseline'&&item.id!==current.id).map(item=>`<option value="${escape(item.id)}">${escape(item.label)}</option>`).reverse().join('');
   if([...$('compare').options].some(item=>item.value===previous)) $('compare').value=previous;
 }
 async function readCandidate() {
@@ -184,7 +186,7 @@ async function apply() {
     history.push(current); if(history.length>21)history.splice(1,1);
     if(!serverChanged||!localChanged)candidate=latest;
     let persisted=true; try {localStorage.setItem(storageKey,JSON.stringify(history));}catch{persisted=false;}
-    writeDraft(current.config); compareOptions(); $('compare').value=serverChanged&&previous.config.renderer===next.renderer?'app-017-frozen':previous.id;
+    writeDraft(current.config); compareOptions(); $('compare').value=serverChanged&&previous.config.renderer===next.renderer?'app-021-frozen':previous.id;
     render(); $('draft-status').textContent=`검토 화면에 적용했습니다. 이전 안과 비교 중입니다.${persisted?'':' 브라우저 저장 불가: 이 탭에서만 유지됩니다.'}`;
     log('수정안 적용 · 검토 기록·설정·고정 입력·작업 ID는 유지했습니다. Android 반영은 별도입니다.');
   } catch(error) { $('draft-status').textContent=`적용하지 못했습니다. 현재안 유지 · ${error.message}`; }
@@ -267,7 +269,7 @@ $('baseline').addEventListener('click',()=>{writeDraft(BASELINE);$('draft-status
 $('apply').addEventListener('click',apply);
 $('apply-top').addEventListener('click',apply);
 $('expand').addEventListener('click',()=>{const expanded=document.body.classList.toggle('expanded');$('expand').textContent=expanded?'검토 도구':'검토 도구 닫기';scaleWindows();});
-$('compare-toggle').addEventListener('click',()=>{$('compare').value=$('compare').value==='none'?'app-017-frozen':'none';render();});
+$('compare-toggle').addEventListener('click',()=>{$('compare').value=$('compare').value==='none'?'app-021-frozen':'none';render();});
 $('page').addEventListener('change',()=>handleAction('page',$('page').value));
 window.addEventListener('popstate',event=>{const page=location.hash.slice(1);if(['home','records','library'].includes(page)){state.page=page;view={detailId:page==='records'&&(controls(state).canSelect||state.selectedId===event.state?.detailId)&&state.records.some(r=>r.id===event.state?.detailId)?event.state.detailId:null,trackId:page==='library'&&tracks(state).some(t=>t.id===event.state?.trackId&&(controls(state).canSelect||t.recordId===state.selectedId))?event.state.trackId:null};render();}});
 $('scenario-top').innerHTML=$('scenario').innerHTML;

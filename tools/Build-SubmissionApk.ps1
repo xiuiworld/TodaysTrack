@@ -1,7 +1,11 @@
+param([string]$SigningDirectory, [switch]$Offline)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 . (Join-Path $PSScriptRoot 'Use-SubmissionToolchain.ps1')
-$signingDir = Join-Path $projectRoot '.local/signing'
+$signingDir = if ($SigningDirectory) { (Resolve-Path -LiteralPath $SigningDirectory).Path } else { Join-Path $projectRoot '.local/signing' }
+if ($SigningDirectory -and (-not(Test-Path -LiteralPath (Join-Path $signingDir 'submission.p12')) -or -not(Test-Path -LiteralPath (Join-Path $signingDir 'password.dpapi')))) {
+    throw 'Explicit signing directory must contain the existing key and DPAPI password. No replacement key created.'
+}
 New-Item -ItemType Directory -Force $signingDir | Out-Null
 $passPath = Join-Path $signingDir 'password.dpapi'
 if (-not(Test-Path -LiteralPath $passPath)) {
@@ -20,7 +24,9 @@ try {
     }
     Push-Location (Join-Path $projectRoot 'vehicle')
     try {
-        & ./gradlew.bat :app:testReleaseUnitTest :app:assembleRelease --no-daemon --max-workers=2
+        $buildArgs = @(':app:testReleaseUnitTest', ':app:assembleRelease', ':app:lintRelease', '--no-daemon', '--max-workers=2')
+        if ($Offline) { $buildArgs += '--offline' }
+        & ./gradlew.bat @buildArgs
         if ($LASTEXITCODE -ne 0) { throw 'Release build or affected tests failed.' }
     } finally { Pop-Location }
     New-Item -ItemType Directory -Force (Join-Path $projectRoot 'apk') | Out-Null

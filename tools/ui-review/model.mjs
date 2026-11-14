@@ -3,7 +3,7 @@ export const BASELINE = Object.freeze({ layout: 'split', font: 20, gap: 20, cove
 export const SCENARIOS = ['empty', 'capturing', 'sealed', 'pending', 'uncertain', 'saved', 'error'];
 export function normalizeConfig(input = {}) {
   const bounded = (key, min, max) => Number.isFinite(Number(input[key])) ? Math.max(min, Math.min(max, Number(input[key]))) : BASELINE[key];
-  return { layout: input.layout === 'focus' ? 'focus' : 'split', font: bounded('font', 16, 24), gap: bounded('gap', 12, 32), cover: bounded('cover', 120, 220), button: bounded('button', 40, 64), tone: ['porcelain', 'warm', 'ink'].includes(input.tone) ? input.tone : 'porcelain', renderer: ['astryx-home-v1','astryx-home-v2','astryx-app-v3','astryx-app-v4','astryx-app-v5','astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10'].includes(input.renderer) ? input.renderer : 'original' };
+  return { layout: input.layout === 'focus' ? 'focus' : 'split', font: bounded('font', 16, 24), gap: bounded('gap', 12, 32), cover: bounded('cover', 120, 220), button: bounded('button', 40, 64), tone: ['porcelain', 'warm', 'ink'].includes(input.tone) ? input.tone : 'porcelain', renderer: ['astryx-home-v1','astryx-home-v2','astryx-app-v3','astryx-app-v4','astryx-app-v5','astryx-app-v6','astryx-app-v7','astryx-app-v8','astryx-app-v9','astryx-app-v10','astryx-app-v11','astryx-app-v12'].includes(input.renderer) ? input.renderer : 'original' };
 }
 export function newRecord(id, overrides = {}) {
   return { id, title: '여행 기록', date: '예시 11월 12일 · 16:08:00', genre: '어쿠스틱', lyrics: '가사 있는 곡', kind: '여행 기록', distance: '6.00', open: false, state: null, intentId: null, jobId: null, input: null, ...overrides };

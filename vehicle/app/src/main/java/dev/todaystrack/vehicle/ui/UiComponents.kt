@@ -19,6 +19,10 @@ internal object UiColors {
     val border=Color.rgb(226,229,233);val player=Color.rgb(38,63,101)
     val accent=Color.rgb(37,42,50);val selected=Color.rgb(245,245,246)
 }
+/** Fit the approved 841 x 605 app canvas to the available window, not the display density. */
+internal object UiSizing {
+    fun scale(widthDp:Float,heightDp:Float)=minOf(widthDp/841f,heightDp/605f).coerceAtLeast(1f)
+}
 internal class UiKit(val context:Context,var scale:Float=1f) {
     fun dp(n:Float)=(n*context.resources.displayMetrics.density).roundToInt()
     fun dp(n:Int)=dp(n.toFloat())
@@ -28,16 +32,23 @@ internal class UiKit(val context:Context,var scale:Float=1f) {
     fun background(color:Int,radius:Int=10,stroke:Int?=null)=GradientDrawable().apply {
         setColor(color);cornerRadius=dp(radius).toFloat();stroke?.let { setStroke(dp(1),it) }
     }
+    fun startRule()=object:Drawable() {
+        private val pen=Paint().apply { color=UiColors.border;strokeWidth=dp(1).toFloat() }
+        override fun draw(canvas:Canvas) { val x=if(context.resources.configuration.layoutDirection==View.LAYOUT_DIRECTION_RTL) bounds.right.toFloat() else bounds.left.toFloat();canvas.drawLine(x,bounds.top.toFloat(),x,bounds.bottom.toFloat(),pen) }
+        override fun setAlpha(alpha:Int) { pen.alpha=alpha }
+        override fun setColorFilter(filter:ColorFilter?) { pen.colorFilter=filter }
+        @Deprecated("Drawable compatibility") override fun getOpacity()=PixelFormat.TRANSLUCENT
+    }
     fun column()=LinearLayout(context).apply { orientation=LinearLayout.VERTICAL }
     fun row()=LinearLayout(context).apply { orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER_VERTICAL }
-    fun space(n:Int)=Space(context).apply { layoutParams=LinearLayout.LayoutParams(dp(n),dp(n)) }
+    fun space(n:Int)=Space(context).apply { layoutParams=LinearLayout.LayoutParams(unit(n),unit(n)) }
     fun line()=View(context).apply { setBackgroundColor(UiColors.border);layoutParams=LinearLayout.LayoutParams(-1,dp(1)) }
     fun text(value:String,size:Float=font-4,bold:Boolean=false)=TextView(context).apply {
         text=value;textSize=size;setTextColor(if(bold) UiColors.ink else UiColors.muted)
-        includeFontPadding=false;setLineSpacing(0f,1.15f)
+        includeFontPadding=false;minimumHeight=dp(size*1.45f);setLineHeight(dp(size*1.45f))
         if(bold) typeface=Typeface.DEFAULT_BOLD
     }
-    fun heading(value:String,small:Boolean=false)=text(value,if(small) font else font*1.4f,true).apply { isAccessibilityHeading=true }
+    fun heading(value:String,small:Boolean=false)=text(value,if(small) font else font*1.4f,true).apply { isAccessibilityHeading=true;minimumHeight=dp((if(small) font else font*1.4f)*1.3f);setLineHeight(minimumHeight) }
     fun icon(name:String,color:Int=UiColors.ink)=ImageView(context).apply {
         setImageDrawable(UiGlyph(context,name,color));importantForAccessibility=View.IMPORTANT_FOR_ACCESSIBILITY_NO
         layoutParams=LinearLayout.LayoutParams(unit(24),unit(24))

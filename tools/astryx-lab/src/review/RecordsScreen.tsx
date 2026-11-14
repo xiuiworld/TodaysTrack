@@ -7,8 +7,8 @@ import {Thumbnail} from '@astryxdesign/core/Thumbnail';
 import {Action,controls,tracks,trackLabel,art,glyphs,type ScreenProps} from './shared';
 import {MusicSection} from './MusicSection';
 import {CollectionHeading,CollectionBody,CollectionTail,collectionRowStyle} from './CollectionLayout';
-export const BackArrow=()=> <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg>;
-const More=()=> <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>;
+export const BackArrow=()=> <svg viewBox="0 0 24 24" style={{width:'calc(24px * var(--tt-ui))',height:'calc(24px * var(--tt-ui))'}} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg>;
+const More=()=> <svg viewBox="0 0 24 24" style={{width:'calc(24px * var(--tt-ui))',height:'calc(24px * var(--tt-ui))'}} fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>;
 export function RecordsScreen({snapshot,open}:ScreenProps){
   const s=snapshot.state,c=controls(s),all=tracks(s);
   return <Stack paddingInline={6} paddingBlock={3} gap={2}>
@@ -20,7 +20,7 @@ export function RecordDetailScreen({snapshot,open,id,back}:{snapshot:ScreenProps
   const r=snapshot.state.records.find((item:any)=>item.id===id);if(!r)return <Stack padding={6}><Text>기록을 선택해 주세요.</Text></Stack>;
   return <Stack paddingInline={6} paddingBlock={1} gap={3}>
     <Stack direction="horizontal" gap={1} vAlign="center"><Action label="기록 목록으로 돌아가기" quiet width={76} onClick={back}><BackArrow/></Action><StackItem size="fill"><Heading level={2}>{r.title}</Heading></StackItem><Action label="기록 정보" quiet width={76} onClick={()=>open('observations',id)}><More/></Action></Stack>
-    <Stack direction="horizontal" gap={6} paddingBlock={3} vAlign="center"><StackItem size="fill"><Stack gap={1}><Text type="supporting">기록 시각</Text><Text type="label">{r.date}</Text></Stack></StackItem><StackItem size="fill"><Stack gap={1} style={{borderInlineStart:'1px solid var(--color-border)',paddingInlineStart:'var(--tt-gap)'}}><Text type="supporting">연속 관측 거리</Text><Heading level={3}>{r.distance} km</Heading></Stack></StackItem></Stack>
+    <Stack direction="horizontal" gap={6} paddingBlock={3} vAlign="center"><StackItem size="fill" style={{flex:'1 1 0',minWidth:0}}><Stack gap={1}><Text type="supporting">기록 시각</Text><Text type="label">{r.date}</Text></Stack></StackItem><StackItem size="fill" style={{flex:'1 1 0',minWidth:0}}><Stack gap={1} style={{borderInlineStart:'1px solid var(--color-border)',paddingInlineStart:'var(--tt-gap)'}}><Text type="supporting">연속 관측 거리</Text><Heading level={3}>{r.distance} km</Heading></Stack></StackItem></Stack>
     <MusicSection snapshot={snapshot} open={open} record={r}/>
   </Stack>;
 }

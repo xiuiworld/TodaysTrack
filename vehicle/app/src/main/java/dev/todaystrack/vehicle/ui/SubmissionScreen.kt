@@ -9,6 +9,8 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import dev.todaystrack.vehicle.R
 import dev.todaystrack.vehicle.generation.Track
 
@@ -34,16 +36,25 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
     private val nav=linkedMapOf<ScreenPage,FrameLayout>()
     private val toggles=mutableListOf<PlayToggle>()
     private val strips=mutableListOf<PlaybackStrip>()
-    init { orientation=VERTICAL;setBackgroundColor(Color.WHITE);chrome();renderBody() }
+    init {
+        orientation=VERTICAL;setBackgroundColor(Color.WHITE)
+        ViewCompat.setOnApplyWindowInsetsListener(this) { view,insets->
+            // Pleos exposes its persistent bottom bar as mandatory system gestures.
+            val safe=insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.mandatorySystemGestures())
+            view.setPadding(safe.left,safe.top,safe.right,safe.bottom);insets
+        }
+        chrome();renderBody()
+    }
     override fun onMeasure(widthMeasureSpec:Int,heightMeasureSpec:Int) {
-        val widthDp=MeasureSpec.getSize(widthMeasureSpec)/resources.displayMetrics.density
-        val scale=if(widthDp>=1400) 1.5f else 1f
+        val widthDp=(MeasureSpec.getSize(widthMeasureSpec)-paddingLeft-paddingRight)/resources.displayMetrics.density
+        val heightDp=(MeasureSpec.getSize(heightMeasureSpec)-paddingTop-paddingBottom)/resources.displayMetrics.density
+        val scale=UiSizing.scale(widthDp,heightDp)
         if(scale!=kit.scale) { kit.scale=scale;chrome();renderBody() }
         super.onMeasure(widthMeasureSpec,heightMeasureSpec)
     }
     private fun chrome() {
         removeAllViews();nav.clear()
-        val header=kit.row().apply { setPadding(kit.dp(24),0,kit.dp(24),0) }
+        val header=kit.row().apply { tag="app-header";setPadding(kit.unit(24),0,kit.unit(24),0) }
         header.addView(ImageView(context).apply { setImageResource(R.drawable.todays_track_mark);importantForAccessibility=IMPORTANT_FOR_ACCESSIBILITY_NO },LayoutParams(kit.unit(36),kit.unit(36)))
         header.addView(kit.space(12));header.addView(kit.text("오늘의 트랙",kit.font*1.2f,true),LayoutParams(0,-2,1f))
         parked=kit.text("");header.addView(parked);header.addView(kit.space(8))
@@ -79,7 +90,7 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
     private fun updateChrome() {
         parked.text=if(model.controls.allowed) "정차 중" else "제한 확인 중";kit.enable(settings,model.controls.canChangeSettings)
         nav.forEach { (page,button)->
-            button.isSelected=page==model.page;button.background=kit.background(if(button.isSelected) UiColors.selected else Color.WHITE,0)
+            button.isSelected=page==model.page;button.background=kit.background(Color.WHITE,0)
             button.findViewWithTag<View>("nav-current").visibility=if(button.isSelected) VISIBLE else INVISIBLE
         }
     }
@@ -96,7 +107,8 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
     private fun renderBody() {
         val y=if(route==routeKey()) scroll.scrollY else 0;val focus=findFocus()?.contentDescription?.toString()
         route=routeKey();body.removeAllViews();toggles.clear();strips.clear()
-        body.setPadding(kit.dp(24),kit.dp(if(model.page==ScreenPage.HOME) 12 else 4),kit.dp(24),kit.dp(12))
+        val collection=model.page==ScreenPage.RECORDS&&detailId==null||model.page==ScreenPage.LIBRARY&&musicId==null
+        body.setPadding(kit.unit(24),kit.unit(if(model.page==ScreenPage.HOME||collection) 12 else 4),kit.unit(24),kit.unit(12))
         when(model.page) {
             ScreenPage.HOME -> home()
             ScreenPage.RECORDS -> model.records.firstOrNull { it.id==detailId }?.let(::recordDetail) ?: records()
@@ -138,22 +150,22 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
     private fun dismissConfirmation() { confirmation?.dismiss();confirmation=null;confirmationRecord=null }
     private fun home() {
         val record=selected();val stage=UiPresentation.home(model)
-        val row=kit.row().apply { gravity=Gravity.CENTER_VERTICAL;minimumHeight=kit.unit(220) };val copy=kit.column()
+        val row=kit.row().apply { tag="home-hero";gravity=Gravity.CENTER_VERTICAL;minimumHeight=kit.unit(220) };val copy=kit.column()
         val title=when(stage) { UiPresentation.Home.CAPTURE->"기록 중";UiPresentation.Home.SEALED->"기록 마감 완료";UiPresentation.Home.WORK->UiPresentation.workTitle(model.intentState);UiPresentation.Home.SAVED->"음악 저장 완료";else->if(!model.controls.loaded) "기록 확인 중" else if(record?.open==true) "마감 전 기록" else "새 기록" }
-        copy.addView(kit.heading(title));copy.addView(kit.space(12))
-        val meta=kit.column()
-        if(stage==UiPresentation.Home.START)meta.addView(kit.text(record?.settings ?: model.defaults))
-        else {
-            meta.addView(kit.text(if(stage==UiPresentation.Home.CAPTURE) model.distance else record?.date.orEmpty()));meta.addView(kit.space(12))
-            meta.addView(kit.text(if(stage==UiPresentation.Home.WORK) model.status else if(stage==UiPresentation.Home.CAPTURE) record?.settings.orEmpty() else model.distance+" · "+record?.settings.orEmpty()).apply { maxLines=2;ellipsize=TextUtils.TruncateAt.END })
-        }
+        copy.addView(kit.heading(title).apply { tag="home-title" });copy.addView(kit.space(12))
+        val meta=kit.column().apply { tag="home-meta" }
+        val subtitle=when(stage) { UiPresentation.Home.START->record?.settings ?: model.defaults;UiPresentation.Home.CAPTURE->model.distance;else->record?.date.orEmpty() }
+        val summary=when(stage) { UiPresentation.Home.START->"";UiPresentation.Home.WORK->model.status;UiPresentation.Home.CAPTURE->record?.settings.orEmpty();else->model.distance+" · "+record?.settings.orEmpty() }
+        fun metaLine(value:String)=kit.text(value).apply { maxLines=1;ellipsize=TextUtils.TruncateAt.END;if(value.isEmpty())visibility=INVISIBLE }
+        // Three natural line boxes keep the action anchored as status/source text changes.
+        meta.addView(metaLine(subtitle));meta.addView(kit.space(12));meta.addView(metaLine(summary))
         val indicator=when {
             stage==UiPresentation.Home.CAPTURE -> model.captureStatus
             model.fixture&&model.intentState!=null -> "대역 · 새 AI 생성 아님"
             else -> ""
         }
-        meta.addView(kit.space(4));meta.addView(kit.text(indicator).apply { maxLines=1;ellipsize=TextUtils.TruncateAt.END })
-        copy.addView(meta,LayoutParams(-1,kit.unit(104)))
+        meta.addView(kit.space(4));meta.addView(metaLine(indicator))
+        copy.addView(meta,LayoutParams(-1,-2))
         copy.addView(kit.space(12));val buttons=kit.row()
         when(stage) {
             UiPresentation.Home.CAPTURE -> {
@@ -170,7 +182,7 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
         copy.addView(buttons)
         if(!model.controls.allowed) { copy.addView(kit.space(8));copy.addView(kit.text("차량 조작 제한 확인 중")) }
         row.addView(copy,LayoutParams(0,-2,1f));row.addView(kit.space(24))
-        val music=kit.column().apply { setPadding(kit.dp(16),0,0,0) }
+        val music=kit.column().apply { tag="home-music";background=kit.startRule();setPadding(kit.unit(16),0,0,0) }
         val track=model.tracks.firstOrNull { it.id==playbackState.trackId } ?: model.tracks.firstOrNull { it.sessionId==record?.id } ?: model.tracks.firstOrNull()
         music.addView(kit.heading(if(track!=null&&track.sessionId!=record?.id) "이전에 만든 음악" else "음악",true));music.addView(kit.space(12))
         if(track==null) {
@@ -182,6 +194,7 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
         }
         row.addView(music,LayoutParams(0,-2,1f));body.addView(row,LayoutParams(-1,0,1f));body.addView(kit.space(16));body.addView(kit.line())
         val latest=model.records.firstOrNull();val recent=ButtonFrame(context).apply {
+            tag="home-recent"
             minimumHeight=kit.hit;isClickable=true;isFocusable=true;contentDescription="기록 상세 보기"
             setOnClickListener { if(latest!=null)goRecord(latest.id) else actions.page(ScreenPage.RECORDS) }
         }
@@ -202,7 +215,7 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
             else empty("아직 기록이 없어요","첫 기록을 시작해 보세요.")
             return
         }
-        model.records.forEach { record->
+        model.records.forEachIndexed { index,record->
             val track=model.tracks.firstOrNull { it.sessionId==record.id }
             val row=collectionBody(record.id,record.title,record.date,track?.let { "만든 음악 · ${it.title}" } ?: if(record.open) (if(model.capturing&&record.id==model.selectedId) "기록 중" else "마감 전") else if(record.id==model.selectedId&&model.intentState!=null) UiPresentation.workTitle(model.intentState) else "만든 음악 없음",track!=null)
             row.addView(kit.space(16));val tail=tail()
@@ -211,6 +224,7 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
             val button=ButtonFrame(context).apply { contentDescription="기록 상세 · ${record.title} · ${record.date}";isFocusable=true;isClickable=true;setOnClickListener { goRecord(record.id) } }
             kit.enable(button,model.controls.canSelect||record.id==model.selectedId)
             button.addView(row,FrameLayout.LayoutParams(-1,-1));body.addView(button,LayoutParams(-1,rowHeight()));body.addView(kit.line())
+            if(index<model.records.lastIndex)body.addView(kit.space(8))
         }
     }
     private fun library() {
@@ -220,7 +234,7 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
             else { empty("아직 저장된 음악이 없어요","기록을 마친 뒤 음악을 만들어 보세요.");body.addView(kit.action("기록 보러 가기") { actions.page(ScreenPage.RECORDS) }) }
             return
         }
-        model.tracks.forEach { track->
+        model.tracks.forEachIndexed { index,track->
             val record=model.records.firstOrNull { it.id==track.sessionId }
             val root=kit.row();val content=collectionBody(track.sessionId,track.title,(record?.title ?: "원래 기록")+" · "+record?.date.orEmpty(),UiPresentation.source(track.provenance))
             val button=ButtonFrame(context).apply { contentDescription="음악 상세 · ${track.title} · ${record?.date.orEmpty()}";isClickable=true;isFocusable=true;setOnClickListener { goMusic(track.id) } }
@@ -228,38 +242,40 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
             button.addView(content,FrameLayout.LayoutParams(-1,-1));root.addView(button,LayoutParams(0,rowHeight(),1f));root.addView(kit.space(16))
             val tail=tail();tail.addView(kit.text(UiPresentation.clock(track.durationMs.takeIf { it>0 })).apply { setSingleLine();gravity=Gravity.END },LayoutParams(0,-2,1f));tail.addView(toggle(track));root.addView(tail)
             body.addView(root,LayoutParams(-1,rowHeight()));body.addView(kit.line())
+            if(index<model.tracks.lastIndex)body.addView(kit.space(8))
         }
     }
-    private fun rowHeight()=maxOf((kit.hit*1.5f).toInt(),kit.unit(60)+kit.dp(24),kit.dp(kit.font*4.8f)+kit.dp(24))
+    private fun rowHeight()=maxOf((kit.hit*1.5f).toInt(),kit.unit(60)+kit.unit(24),kit.dp(kit.font*4.8f)+kit.unit(24))
     private fun tail()=kit.row().apply { gravity=Gravity.END or Gravity.CENTER_VERTICAL;layoutParams=LayoutParams(kit.unit(152),kit.hit) }
     private fun collectionBody(id:String,title:String,subtitle:String,note:String,hasCover:Boolean=true):LinearLayout = kit.row().apply {
-        setPadding(0,kit.dp(12),0,kit.dp(12));addView(if(hasCover) kit.cover(id,60) else kit.placeholder(60,"records"));addView(kit.space(16))
+        setPadding(0,kit.unit(12),0,kit.unit(12));addView(if(hasCover) kit.cover(id,60) else kit.placeholder(60,"records"));addView(kit.space(16))
         val text=kit.column().apply { minimumHeight=kit.dp(kit.font*4.8f) }
         text.addView(kit.text(title,kit.font-2,true).apply { tag="collection-title";maxLines=1;ellipsize=TextUtils.TruncateAt.END });text.addView(kit.space(4))
         text.addView(kit.text(subtitle).apply { maxLines=1;ellipsize=TextUtils.TruncateAt.END });text.addView(kit.space(4));text.addView(kit.text(note).apply { maxLines=1;ellipsize=TextUtils.TruncateAt.END })
         addView(text,LayoutParams(0,-2,1f))
     }
     private fun detailHeading(title:String,backLabel:String,extra:View,onBack:()->Unit) {
-        val row=kit.row();row.addView(kit.action(backLabel,76,quiet=true,icon="back",onClick=onBack));row.addView(kit.space(4));row.addView(kit.heading(title),LayoutParams(0,-2,1f));row.addView(extra);body.addView(row);body.addView(kit.space(8))
+        val row=kit.row();row.addView(kit.action(backLabel,76,quiet=true,icon="back",onClick=onBack));row.addView(kit.space(4));row.addView(kit.heading(title),LayoutParams(0,-2,1f));row.addView(kit.space(4));row.addView(extra);body.addView(row);body.addView(kit.space(8))
     }
     private fun recordDetail(record:RecordItem) {
         detailHeading(record.title,"기록 목록으로 돌아가기",kit.action("기록 정보",76,quiet=true,icon="more") { actions.details() }) { detailId=null;renderBody() }
-        val stats=kit.row().apply { setPadding(0,kit.dp(12),0,kit.dp(12)) }
+        body.addView(kit.space(4))
+        val stats=kit.row().apply { setPadding(0,kit.unit(12),0,kit.unit(12)) }
         val time=kit.column();time.addView(kit.text("기록 시각"));time.addView(kit.space(4));time.addView(kit.text(record.date,kit.font-2,true));stats.addView(time,LayoutParams(0,-2,1f));stats.addView(kit.space(24))
-        val distance=kit.column();distance.addView(kit.text("연속 관측 거리"));distance.addView(kit.space(4));distance.addView(kit.text(UiPresentation.distance(if(record.id==model.selectedId) model.distance else record.distance),kit.font,true));stats.addView(distance,LayoutParams(0,-2,1f));body.addView(stats)
+        val distance=kit.column().apply { background=kit.startRule();setPadding(kit.unit(16),0,0,0) };distance.addView(kit.text("연속 관측 거리"));distance.addView(kit.space(4));distance.addView(kit.heading(UiPresentation.distance(if(record.id==model.selectedId) model.distance else record.distance),true));stats.addView(distance,LayoutParams(0,-2,1f));body.addView(stats)
         body.addView(kit.space(12));body.addView(kit.line());body.addView(kit.space(16));body.addView(kit.heading("이 기록의 음악",true));body.addView(kit.space(12))
         val tracks=model.tracks.filter { it.sessionId==record.id }
         if(tracks.isNotEmpty())tracks.forEach { track->
             val row=kit.row();row.addView(kit.cover(record.id,120));row.addView(kit.space(16))
-            val copy=kit.column();copy.addView(kit.heading(track.title,true));copy.addView(kit.space(4));copy.addView(kit.text(record.settings+" · "+UiPresentation.clock(track.durationMs.takeIf { it>0 })));copy.addView(kit.text(UiPresentation.source(track.provenance)))
-            row.addView(copy,LayoutParams(0,-2,1f));row.addView(toggle(track));body.addView(row)
+            val copy=kit.column();copy.addView(kit.heading(track.title,true));copy.addView(kit.space(4));copy.addView(kit.text(record.settings+" · "+UiPresentation.clock(track.durationMs.takeIf { it>0 })));copy.addView(kit.space(4));copy.addView(kit.text(UiPresentation.source(track.provenance)))
+            row.addView(copy,LayoutParams(0,-2,1f));row.addView(kit.space(16));row.addView(toggle(track));body.addView(row)
         } else {
             val pending=record.id==model.selectedId&&model.intentState!=null
             val row=kit.row();row.addView(kit.placeholder(120,"library"));row.addView(kit.space(16))
             val copy=kit.column();copy.addView(kit.text(if(record.open) (if(model.capturing) "기록을 모으고 있어요" else "마감 전 기록이에요") else if(pending) UiPresentation.workTitle(model.intentState) else "아직 만든 음악이 없어요",kit.font-2,true));copy.addView(kit.space(4));copy.addView(kit.text(if(pending) model.status else record.settings))
             if(pending&&model.fixture)copy.addView(kit.text("대역 · 새 AI 생성 아님"))
             if(record.open&&model.capturing)copy.addView(kit.text(model.captureStatus))
-            row.addView(copy,LayoutParams(0,-2,1f))
+            row.addView(copy,LayoutParams(0,-2,1f));row.addView(kit.space(16))
             val action=if(record.open) kit.action(if(model.capturing) "기록 마감" else "기록 이어가기",176) { if(model.capturing)actions.finish() else actions.start() }.also { kit.enable(it,if(model.capturing) model.controls.canStop else model.controls.canStart) }
             else kit.action(if(pending) "상태 확인" else "이 기록으로 만들기",200,primary=!pending) { generate() }.also { kit.enable(it,model.controls.canGenerate&&record.id==model.selectedId) }
             row.addView(action);body.addView(row)
@@ -268,11 +284,16 @@ class SubmissionScreen(context:Context,private val actions:SubmissionActions):Li
     private fun musicDetail(track:Track) {
         val record=model.records.firstOrNull { it.id==track.sessionId }
         val link=kit.action("원래 기록 보기",176,quiet=true) { goRecord(track.sessionId) }
-        (link.getChildAt(0) as ViewGroup).let { face->(face.getChildAt(0) as TextView).text="기록 보기  ›" }
+        (link.getChildAt(0) as FrameLayout).let { face->
+            face.removeAllViews();val label=kit.row().apply { gravity=Gravity.CENTER }
+            label.addView(kit.text("기록 보기",kit.font-2,true));label.addView(kit.space(8))
+            label.addView(kit.icon("chevron"),LayoutParams(kit.unit(16),kit.unit(16)))
+            face.addView(label,FrameLayout.LayoutParams(-1,-1))
+        }
         kit.enable(link,record!=null&&(model.controls.canSelect||record.id==model.selectedId))
         detailHeading("음악 상세","보관함으로 돌아가기",link) { musicId=null;renderBody() }
         val row=kit.row();row.addView(kit.cover(track.sessionId,240).apply { tag="album-cover-large" });row.addView(kit.space(24))
-        val copy=kit.column();copy.addView(kit.heading(track.title));copy.addView(kit.space(12));copy.addView(kit.text(record?.settings.orEmpty()));copy.addView(kit.text(UiPresentation.source(track.provenance)));copy.addView(kit.space(16));copy.addView(kit.text((record?.title ?: "원래 기록")+"에서 만든 음악"));copy.addView(kit.space(4));copy.addView(kit.text(record?.date.orEmpty()))
+        val copy=kit.column();copy.addView(kit.heading(track.title));copy.addView(kit.space(12));copy.addView(kit.text(record?.settings.orEmpty()));copy.addView(kit.space(12));copy.addView(kit.text(UiPresentation.source(track.provenance)));copy.addView(kit.space(20));copy.addView(kit.text((record?.title ?: "원래 기록")+"에서 만든 음악"));copy.addView(kit.space(4));copy.addView(kit.text(record?.date.orEmpty()));copy.addView(kit.space(8))
         row.addView(copy,LayoutParams(0,-2,1f));body.addView(row);body.addView(kit.space(8));body.addView(kit.line());body.addView(strip(track))
     }
     private fun empty(title:String,description:String) { body.addView(kit.space(24));body.addView(kit.icon("library"));body.addView(kit.space(12));body.addView(kit.heading(title,true));body.addView(kit.space(8));body.addView(kit.text(description)) }

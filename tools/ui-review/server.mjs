@@ -17,6 +17,8 @@ const files = new Map([
   ...['index.html','home.js','home.css'].map(name=>[`/home-review/v7/${name}`,[`../astryx-lab/.local/app-review-v7/${name}`,name.endsWith('html')?'text/html; charset=utf-8':name.endsWith('css')?'text/css':'text/javascript']]),
   ...['index.html','home.js','home.css'].map(name=>[`/home-review/v8/${name}`,[`../astryx-lab/.local/app-review-v8/${name}`,name.endsWith('html')?'text/html; charset=utf-8':name.endsWith('css')?'text/css':'text/javascript']]),
   ...['index.html','home.js','home.css'].map(name=>[`/home-review/v9/${name}`,[`../astryx-lab/.local/app-review-v9/${name}`,name.endsWith('html')?'text/html; charset=utf-8':name.endsWith('css')?'text/css':'text/javascript']]),
+  ...['index.html','home.js','home.css'].map(name=>[`/home-review/v10/${name}`,[`../astryx-lab/.local/app-review-v10/${name}`,name.endsWith('html')?'text/html; charset=utf-8':name.endsWith('css')?'text/css':'text/javascript']]),
+  ...['index.html','home.js','home.css'].map(name=>[`/home-review/v11/${name}`,[`../astryx-lab/.local/app-review-v11/${name}`,name.endsWith('html')?'text/html; charset=utf-8':name.endsWith('css')?'text/css':'text/javascript']]),
   ...['index.html','app.mjs','model.mjs','review.css','candidate.json'].map(name=>[`/versions/white-v03/${name}`,[`./versions/white-v03/${name}`,name.endsWith('html')?'text/html; charset=utf-8':name.endsWith('css')?'text/css':name.endsWith('json')?'application/json':'text/javascript']])
 ]);
 const server = http.createServer(async (req, res) => {

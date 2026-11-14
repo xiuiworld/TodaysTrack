@@ -10,7 +10,7 @@ import android.widget.*
 
 /** Shared display shell. Preference values and effects stay in MainActivity. */
 object UiDialogs {
-    private fun kit(context:Context)=UiKit(context,if(context.resources.configuration.screenWidthDp>=1400) 1.5f else 1f)
+    private fun kit(context:Context)=UiKit(context,with(context.resources.configuration) { UiSizing.scale(screenWidthDp.toFloat(),screenHeightDp.toFloat()) })
     fun body(context:Context)=kit(context).column()
     fun text(context:Context,value:String)=kit(context).text(value)
     fun disclosure(context:Context,title:String,value:String):View {

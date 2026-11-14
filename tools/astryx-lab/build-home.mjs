@@ -38,3 +38,11 @@ await copyFile('home-review.html','.local/app-review-v8/index.html');
 await mkdir('.local/app-review-v9',{recursive:true});
 await build({entryPoints:['src/app-review-v9.tsx'],bundle:true,outfile:'.local/app-review-v9/home.js',jsx:'automatic',format:'esm',platform:'browser',target:['es2022'],define:{'process.env.NODE_ENV':'"production"'},minify:true,logLevel:'info'});
 await copyFile('home-review.html','.local/app-review-v9/index.html');
+
+await mkdir('.local/app-review-v10',{recursive:true});
+await build({entryPoints:['src/app-review-v10.tsx'],bundle:true,outfile:'.local/app-review-v10/home.js',jsx:'automatic',format:'esm',platform:'browser',target:['es2022'],define:{'process.env.NODE_ENV':'"production"'},minify:true,logLevel:'info'});
+await copyFile('home-review.html','.local/app-review-v10/index.html');
+
+await mkdir('.local/app-review-v11',{recursive:true});
+await build({entryPoints:['src/app-review-v11.tsx'],bundle:true,outfile:'.local/app-review-v11/home.js',jsx:'automatic',format:'esm',platform:'browser',target:['es2022'],define:{'process.env.NODE_ENV':'"production"'},minify:true,logLevel:'info'});
+await copyFile('home-review.html','.local/app-review-v11/index.html');
