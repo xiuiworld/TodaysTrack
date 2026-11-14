@@ -1,23 +1,26 @@
 # 오늘의 트랙 · 0.4 로컬 실행 안내
 
-현재 제출 기준은 **0.4.0-submission(5)**, Android Views 흰색 UI와 v2 음악 엔진이다. 제출 커밋·APK/소스/영상 해시는 패키지 manifest.json과 evidence/release-verification.json을 기준으로 확인한다. 예전0.3 안내는 history/runbook-0.3.md에 보존했다.
+현재 제출 기준은 **0.4.0-submission(5)**, Android Views 흰색 UI와 v2 음악 엔진이다. 실행 코드와 검증된 소스 ZIP은 `submission-v0.4.0` 태그의 `d7d99c4ed6ef6a8d8c24c605475ee6b3723e38aa` 기준이며, main에는 이후 기획서·공개 안내 정리가 포함된다. 예전 0.3 안내는 [과거 기록](history/runbook-0.3.md)에 보존한다.
 
 ## 제공 파일
 
-- apk/TodaysTrack-release.apk: 기존 dev.todaystrack.vehicle.submission 패키지·서명을 유지한 release.
-- source/TodaysTrack-source.zip: manifest의 Git 커밋에 해당하는 vehicle/server/**music-core**/화면 검토 도구/문서와 source-inventory.json. 개인 작업 중인 기획서 초안·접수 개인정보는 포함하지 않는다.
-- TodaysTrack-demo.mp4: 약2분28초의 실제 Pleos 화면과 실제 기기 재생 소리. 합성 주행 입력·생성 대기 단축·별도 저장곡 다시 듣기 장면을 표시했다. 버전 고정 전0.3(4)의 동일 UI/엔진 코드 촬영이며0.4를 새로 생성한 영상으로 표시하지 않는다.
-- audio/TodaysTrack-demo-song.mp3: 영상에서 사용한 실제 새 AI 곡 예시. 앱 DB를 우회해 가져오는 설치 데이터가 아니다.
-- docs/verification.md: 확인 범위와 첫 재생 클릭 결과·청취 유예·후속 한계.
+- [apk/MamboCore_TodaysTrack_release.apk](../../apk/MamboCore_TodaysTrack_release.apk): 맘보코어(MamboCore) 제출용 파일명. 기존 `dev.todaystrack.vehicle.submission` 패키지·서명·검증된 바이트를 유지한다.
+- [제출 Release](https://github.com/xiuiworld/TodaysTrack/releases/tag/submission-v0.4.0): 같은 APK, `TodaysTrack-source.zip`, `SHA256SUMS.txt`. 소스 ZIP에는 차량·서버·공통 음악 엔진·검토 도구·해당 커밋의 문서·파일별 해시 목록이 포함된다.
+- [YouTube 시연 영상](https://youtu.be/bQ5uMmf7UIw): 약 2분 28초의 실제 Pleos 화면과 기기 소리. SDK 합성 주행·생성 대기 단축·별도 재감상 촬영을 표시했다. 버전 고정 전 0.3(4)의 동일 UI·엔진 코드이며 최종 0.4의 신규 생성 촬영으로 표시하지 않는다.
+- [검증 결과와 한계](verification.md): 첫 재생 클릭·소스 재현·청취 미평가·후속 범위.
+
+MP4·별도 MP3·원본 기기 증거·DB·키·공식 양식은 공개 Release에 첨부하지 않는다. 과거 문서의 `submission/` 경로는 개발 PC의 로컬 보관본이며 새 clone에는 없다. 새 기기에는 기존 기록·곡이 포함되지 않는다.
 
 ## 기존 전용 Pleos에 설치
 
-현재 검증 환경은 Windows/PowerShell7/JDK17/Android SDK35·Build Tools35/Pleos Connect2.1.0(API34)이다. 앱의 Vehicle2.3.2/FusedLocation1.1.3 의존성은 Gradle에 고정했다. 실제 관측 앱 영역은1682×1210/160dpi다. 기기 해상도나 밀도를 임의로 바꾸지 않는다.
+현재 검증 환경은 Windows/PowerShell 7/JDK 17/Android SDK 35·Build Tools 35/Pleos Connect 2.1.0(API 34)이다. 앱의 Vehicle 2.3.2/FusedLocation 1.1.3 의존성은 Gradle에 고정했다. 전체 에뮬레이터 화면은 **2560×1440, 160dpi**, 시스템·차량 패널을 제외한 앱 영역은 **1682×1210**이다. 기기 해상도나 밀도를 임의로 바꾸지 않는다.
+
+저장소를 clone한 루트에서 실행한다. Git이 필요하며 JDK 17의 `JAVA_HOME`과 설치된 Android SDK의 `ANDROID_HOME`을 준비한다. APK는 저장소에 포함돼 있다. 다운로드만 필요한 경우 위 Release를 이용한다.
 
 ```powershell
 . ./tools/Use-SubmissionToolchain.ps1
 adb devices
-adb -s emulator-5554 install -r apk/TodaysTrack-release.apk
+adb -s emulator-5554 install -r apk/MamboCore_TodaysTrack_release.apk
 adb -s emulator-5554 shell am start --user 10 -W -n dev.todaystrack.vehicle.submission/dev.todaystrack.vehicle.MainActivity
 ```
 
@@ -25,25 +28,27 @@ adb -s emulator-5554 shell am start --user 10 -W -n dev.todaystrack.vehicle.subm
 
 ## 다른 PC에서 소스로 실행
 
-새 전용 AVD와 필요한 JDK/SDK를 준비한다. 제공 APK의 개발 서버 인증서는 이 PC의 공개 인증서이므로, 다른 PC의 새 TLS 키로 서버를 만들면 그 공개 인증서를 넣어 APK를 다시 빌드해야 한다. private key/DPAPI/기존 사용자 DB는 배포물에 넣지 않는다.
+새 전용 Pleos AVD, 위 JDK/SDK와 Python·pip를 준비한다. 소스 ZIP을 압축 해제한 루트 또는 clone한 저장소에서 실행하며 `vehicle`, `server`, `music-core` 폴더를 함께 둔다. 제공 APK의 개발 서버 인증서는 원 검증 PC의 공개 인증서이므로, 다른 PC의 새 TLS 키로 서버를 만들면 그 공개 인증서를 넣어 APK를 다시 빌드해야 한다. private key/DPAPI/기존 사용자 DB는 배포하지 않는다. 초기화 스크립트가 해당 작업 사본의 공개 인증서 파일을 갱신하므로 새 개발 사본에서만 실행한다.
 
 ```powershell
 . ./tools/Use-SubmissionToolchain.ps1
 pwsh -NoProfile -File server/Initialize-LocalServer.ps1
 pwsh -NoProfile -File server/Initialize-MusicStorage.ps1
 pwsh -NoProfile -File tools/Install-MediaTool.ps1
+$env:TODAYSTRACK_FFMPEG = (Get-ChildItem -LiteralPath tools/.local/media/imageio_ffmpeg/binaries -Filter 'ffmpeg-win*.exe' | Select-Object -First 1).FullName
+if (-not $env:TODAYSTRACK_FFMPEG) { throw 'FFmpeg executable is required for decoder checks.' }
 ./server/gradlew.bat -p server test :music-core:test installDist --no-daemon --max-workers=1
 pwsh -NoProfile -File tools/Build-SubmissionApk.ps1
 ```
 
-Build-SubmissionApk는 새 작업 환경에서만 새 로컬 서명을 만든다. 기존 설치의 동일 서명 업데이트에는 `-SigningDirectory <기존 submission.p12/password.dpapi 폴더>`를 지정한다. 명시한 폴더에 키가 없으면 대체 키를 만들지 않고 중단한다. 이미 캐시한 의존성만 쓸 때는 `-Offline`을 추가한다. 원본과 APK 바이트 재현 여부는 검증 문서의 분리 소스 빌드 결과와 구분한다.
+Build-SubmissionApk 결과는 로컬 `apk/TodaysTrack-release.apk`다. 위 공개 제출 APK를 덮어쓰는 명령이 아니다. 새 작업 환경에서는 새 로컬 서명을 만들므로 이 결과는 **새 전용 AVD에 설치**한다. 기존 설치의 동일 서명 업데이트에는 `-SigningDirectory <기존 submission.p12/password.dpapi 폴더>`를 지정한다. 명시한 폴더에 키가 없으면 대체 키를 만들지 않고 중단한다. 이미 캐시한 의존성만 쓸 때는 `-Offline`을 추가한다. 전체 APK 바이트 재현 여부는 검증 문서의 분리 소스 빌드 결과와 구분한다.
 
 차량 앱의 i→기기 연결 정보에는 공개 등록 정보만 표시된다. 해당 JSON을 로컬 `server/.local/enrollment.json`에 저장한 뒤 아래처럼 명시 등록한다. 개인 키는 가져오거나 채팅에 붙이지 않는다.
 
 ```powershell
 $env:TODAYSTRACK_SERVER_STATE=(Resolve-Path server/.local).Path
 ./server/build/install/TodaysTrackServer/bin/TodaysTrackServer.bat enroll server/.local/enrollment.json
-pwsh -NoProfile -File server/Start-LocalServer.ps1
+pwsh -NoProfile -File server/Start-LocalServer.ps1 -FfmpegExecutable $env:TODAYSTRACK_FFMPEG
 ```
 
 서버는 localhost127.0.0.1:8443 HTTPS만 열고 앱은 에뮬레이터의10.0.2.2:8443으로 연결한다. StateDirectory 인자는 같은 PC의 기존 상태 폴더를 명시적으로 재사용할 때만 쓴다. Initialize-MusicStorage는 새 결과 암호화 키만 DPAPI로 보관하며, 기존 암호화 결과가 있는데 키가 없으면 새 키로 덮지 않는다. Start-LocalServer는 기존 보호 키를 프로세스 환경에만 읽고 출력하지 않는다.

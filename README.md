@@ -1,70 +1,106 @@
+<div align="center">
+
+<img src="docs/assets/todays-track-mark.svg" width="72" height="72" alt="오늘의 트랙 로고" />
+
 # 오늘의 트랙 · Today's Track
 
-**달린 길이 음악이 되다.**
+### 달린 길이 음악이 되다.
 
-실제 주행 기록으로 주행이 끝난 뒤 AI가 전체 여정의 분위기와 흐름을 담은 곡을 만드는 Pleos Connect 앱 프로젝트입니다. 프로젝트 폴더명은 `TodaysTrack`입니다.
+**맘보코어 · MamboCore**
 
-## 문서 구조
+주행이 끝난 뒤, 차량에 기록된 여정으로 AI 음악을 만들어 함께 달린 시간을 한 곡으로 간직하는 **Pleos Connect 앱**입니다.
+
+![제출 버전](https://img.shields.io/badge/submission-0.4.0%20%285%29-263f65)
+![Android UI](https://img.shields.io/badge/Android-Views-263f65)
+![기술 구성](https://img.shields.io/badge/Kotlin-Ktor%20%C2%B7%20Room%20%C2%B7%20Media3-263f65)
+
+**[시연 영상 ↗](https://youtu.be/bQ5uMmf7UIw)** · **[APK 다운로드](https://github.com/xiuiworld/TodaysTrack/releases/download/submission-v0.4.0/MamboCore_TodaysTrack_release.apk)** · **[설치·실행 안내](docs/submission/runbook.md)** · **[기획서](docs/proposal.md)**
+
+</div>
+
+## 실제 Pleos 화면
+
+![Pleos Connect 에뮬레이터에서 실행한 오늘의 트랙 홈](docs/assets/pleos-home.png)
+
+<table>
+  <tr><th>기록과 연결된 음악</th><th>보관함</th><th>음악 상세</th></tr>
+  <tr>
+    <td><a href="docs/assets/pleos-record.png"><img src="docs/assets/pleos-record.png" alt="기록 상세와 이 기록에서 만든 음악" width="300" /></a></td>
+    <td><a href="docs/assets/pleos-library.png"><img src="docs/assets/pleos-library.png" alt="저장된 AI 음악과 대역 음원을 구분하는 보관함" width="300" /></a></td>
+    <td><a href="docs/assets/pleos-song.png"><img src="docs/assets/pleos-song.png" alt="큰 커버와 재생 위치를 표시하는 음악 상세" width="300" /></a></td>
+  </tr>
+</table>
+
+Android 앱의 실제 캡처입니다. 날짜·거리·곡은 **에뮬레이터의 SDK 합성 주행 검증 데이터**이며 실도로 주행 결과가 아닙니다. 고정 커버는 장식 이미지입니다. [캡처 출처와 버전](docs/assets/README.md)
+
+## 한 번의 여정을 한 곡으로
+
+**기록 시작 → 기록 마감 → 음악 만들기 → 차량에 저장 → 보관함에서 다시 듣기**
+
+| 단계 | 앱에서 하는 일 |
+| --- | --- |
+| 기록 | 출발 전 기록을 시작하고, Pleos SDK의 위치와 지원 차량 누적거리 정보를 수집합니다. |
+| 마감 | 관측된 거리와 기록을 확인합니다. 주행 중 추가 입력을 요구하지 않습니다. |
+| 음악 만들기 | 정차 후 설정·요약 전송 안내를 확인하고, 여정 특징과 곡 구성안으로 AI 음악을 요청합니다. |
+| 감상 | 완성곡을 차량에 저장하고, 보관함에서 원래 기록과 함께 찾고 재생합니다. 저장곡은 오프라인에서도 다시 듣습니다. |
+
+정밀 좌표는 차량 로컬에 보관하고 생성에 필요한 요약을 서버에 전달합니다. 차량 화면 제한(CarUx), 대역 음원 표시, 생성 전 전송 안내를 적용합니다.
+
+## 구현 범위와 확인 결과
+
+| 구분 | 현재 상태 |
+| --- | --- |
+| 차량 앱 | Kotlin · Android Views. 홈, 기록 목록·상세, 보관함·음악 상세, 설정과 재생 제어를 구현했습니다. |
+| 핵심 흐름 | 동일 UI·엔진 코드에서 SDK 합성 8km 기록 → 실제 AI 음악 2곡 생성 → 차량 저장·재생을 확인했습니다. |
+| 최종 0.4 앱 | 동일 서명 업데이트, 기존 기록·곡 보존, 새 기록 시작·마감·생성 승인 대기, 저장곡의 콜드 시작 후 첫 클릭 오프라인 재생을 확인했습니다. |
+| 검사 | 제출 코드 기준 차량 48 · 서버 44 · 공통 엔진 18개 검사 통과. 검증 당시의 결과이며 상시 CI 배지가 아닙니다. |
+| 후속 계획 | 폰 연계·일반 로그인·앨범·동기화·공유, 실차·장시간 검증, 운영 배포는 후속 범위입니다. |
+
+**확인 범위:** 영상은 버전 고정 전 0.3(4)의 동일 UI·엔진 코드로 촬영했습니다. 생성 대기를 단축했으며 마지막 재감상은 별도 촬영입니다. 최종 0.4에서 새 유료 곡을 다시 생성하지 않았고, 청취 품질·실차 동작은 검증 완료로 표시하지 않습니다. [검증 결과와 한계](docs/submission/verification.md)
+
+## 다운로드와 실행
+
+| 자료 | 경로 |
+| --- | --- |
+| 제출 Release | [0.4.0-submission(5)](https://github.com/xiuiworld/TodaysTrack/releases/tag/submission-v0.4.0) |
+| 저장소 APK | [apk/MamboCore_TodaysTrack_release.apk](apk/MamboCore_TodaysTrack_release.apk) |
+| Release APK | [MamboCore_TodaysTrack_release.apk](https://github.com/xiuiworld/TodaysTrack/releases/download/submission-v0.4.0/MamboCore_TodaysTrack_release.apk) |
+| 검증된 소스 ZIP | [TodaysTrack-source.zip](https://github.com/xiuiworld/TodaysTrack/releases/download/submission-v0.4.0/TodaysTrack-source.zip) |
+| 파일 해시 | [SHA256SUMS.txt](https://github.com/xiuiworld/TodaysTrack/releases/download/submission-v0.4.0/SHA256SUMS.txt) |
+| 시연 영상 | [YouTube · 오늘의 트랙 시연](https://youtu.be/bQ5uMmf7UIw) |
+
+APK·소스 ZIP의 실행 코드 기준은 [d7d99c4](https://github.com/xiuiworld/TodaysTrack/tree/d7d99c4ed6ef6a8d8c24c605475ee6b3723e38aa), 고정 태그는 `submission-v0.4.0`입니다. **main에는 이후 기획서·심사용 문서 정리가 포함됩니다.** 자동 생성되는 GitHub 소스 압축과 별도로, 재빌드 검증한 소스 ZIP을 첨부합니다.
+
+검증 환경은 **Windows · PowerShell 7 · JDK 17 · Android SDK 35 · Pleos Connect 2.1.0(API 34)**입니다. 화면 규격은 **2560×1440 / 160dpi**, 실제 앱 영역은 **1682×1210**입니다. 설치·소스 빌드·기기 연결 절차는 [실행 안내](docs/submission/runbook.md)를 따릅니다.
+
+> 새 설치에는 기존 사용자의 기록·곡이 포함되지 않습니다. 새 음악 생성에는 PC 서버·인터넷·별도 비용 승인이 필요합니다. 기본 설정은 유료 API를 호출하지 않으며, 이미 저장한 곡은 서버 없이 재생할 수 있습니다.
+
+## 구성
+
+```mermaid
+flowchart LR
+    SDK["Pleos SDK<br/>위치 · 지원 차량 거리"] --> CAR["차량 앱<br/>기록 · 로컬 보관"]
+    CAR --> CORE["공통 음악 엔진<br/>여정 특징 · 곡 구성안"]
+    CORE --> SERVER["Ktor 서버<br/>기기 확인 · 작업 · 비용 관리"]
+    SERVER --> AI["외부 음악 생성 API"]
+    AI --> STORE["결과 검사 · 음원 저장"]
+    STORE --> PLAY["차량 보관함 · Media3<br/>저장곡 오프라인 재생"]
+```
 
 ```text
 TodaysTrack/
-├── README.md
-├── AGENTS.md
-└── docs/
-    ├── proposal.md
-    ├── product/
-    │   └── product-plan.md
-    ├── design/
-    │   └── deferred-design-notes.md
-    ├── research/
-    │   └── competitive-analysis-2026-11-12.md
-    ├── development/
-    │   └── ecc-usage.md
-    ├── reviews/
-    │   └── 2026-11-12-proposal-review.md
-    └── archive/
-        └── passenger-gift-proposal.md
+├── vehicle/       Android 차량 앱 · Room · Media3
+├── music-core/    차량·서버가 공유하는 여정 특징·음악 구성 로직
+├── server/        Ktor 서버 · 작업 원장 · 음악 제공자 연동
+├── docs/          기획 · 설계 · 검증 · 제출 안내
+├── tools/         빌드·패키징 도구와 브라우저 UI 비교 도구
+└── validation/    SDK·통합 흐름을 확인하는 검증 스크립트
 ```
 
-| 문서 | 용도 |
-| --- | --- |
-| [오늘의 트랙 기획서](docs/proposal.md) | 선택한 프로젝트의 공모전 소개·심사 자료. 기획 변경은 이 문서에 반영합니다. |
-| [내부 제품 기획서](docs/product/product-plan.md) | 핵심 경험·고객·기능·이용 흐름·제품 원칙·검증 과제를 정리한 최신 내부 기준입니다. |
-| [설계 단계로 넘길 메모](docs/design/deferred-design-notes.md) | 기존 기술 검토를 분리한 참고 자료입니다. API·데이터 모델·서버·폰 연결의 확정 설계는 아닙니다. |
-| [경쟁 서비스 조사](docs/research/competitive-analysis-2026-11-12.md) | 차량 음악·경로 음악화·여행 기록·생성 음악의 선행 사례와 근거, 차별화 제안을 정리합니다. |
-| [ECC 사용 안내](docs/development/ecc-usage.md) | 전역 설치 상태, Codex에서의 스킬 사용 예시와 관리 방법입니다. |
-| [에이전트 작업 규칙](AGENTS.md) | 프로젝트 맥락, 기존 개발 선호와 ECC·Superpowers 적용 원칙입니다. |
-| [심사 검토 및 보완내역](docs/reviews/2026-11-12-proposal-review.md) | 두 후보에 대한 평가와 보완 근거, 아직 검증하지 못한 사항을 기록한 문서입니다. |
-| [조수석 선물 기획서](docs/archive/passenger-gift-proposal.md) | 선택하지 않은 후보의 보관본입니다. |
+브라우저 UI 비교 도구는 모의 데이터를 사용하는 개발 도구이며 Android 앱이나 실제 생성·재생 검증을 대신하지 않습니다. 키·DB·사용자 데이터·원본 기기 증거·빌드 캐시는 Git에 포함하지 않습니다.
 
-## 현재 진행 상태
+## 더 살펴보기
 
-- 현재 제출 기준은 **0.4.0-submission(5)**, 브라우저에서 검토한 흰색 Android Views UI와 v2 음악 엔진입니다. 새 엔진의 실제 음악2곡 생성·차량 저장·재생과 약2분28초 실제 화면/소리 영상을 확보했습니다. 최종 기기 확인·첫 재생·소스 재현 결과와 청취 유예는 [검증/한계](docs/submission/verification.md), 설치·서버·소스 빌드는 [실행 안내](docs/submission/runbook.md)를 확인하세요. APK/소스/영상 묶음은 `submission/releases/0.4.0-submission/`에서 준비하며 커밋·해시는 manifest로 구분합니다. 공식 양식과 외부 접수는 사용자 단계입니다.
-- 주행 데이터를 음악에 연결하는 경험이 핵심입니다. 주행 후 생성과 주행 중 생성 모두 가능한 방향이며, 현재 기획서의 기본 개발 범위는 주행 후 생성입니다.
-- 앱이 기록에서 여정의 특징·곡 구성안을 만들고, AI가 실제 곡을 생성하는 방향입니다. 기본 악보의 동일성·정밀한 지도 동기화는 보장하지 않습니다.
-- 기획과 상세 설계를 분리합니다. 기간·선택 설정·앨범·폰 연계는 주행 후 음악 생성·소장을 돕는 기능으로 다룹니다.
-- 참가자 개인정보와 확인되지 않은 성과 수치는 기재하지 않았으며, 두 기획서의 7번 참고자료는 공란으로 유지합니다.
+[문서 목차](docs/README.md) · [앱 기획서](docs/proposal.md) · [설치·실행](docs/submission/runbook.md) · [검증·한계](docs/submission/verification.md) · [설계 v0.2](docs/design/README.md) · [후속 계획](docs/development/implementation-follow-up.md)
 
-기존 문서는 이전 Codex 작업 폴더에서 이 프로젝트의 `docs/`로 이동했습니다.
-
-## 실행과 산출물
-
-- 차량 앱: `vehicle/` — Kotlin/Android, Room, 서비스 소유 SDK 수집, 고정 outbox, Media3. release package는 `dev.todaystrack.vehicle.submission`, 개발 앱과 별도로 설치해 기존 기록을 보존합니다.
-- 로컬 서버: `server/` — Kotlin/Ktor, 제출용 단일 SQLite 내구 작업 원장, HTTPS·명시 기기 등록·서명/재생 공격 방지·멱등 작업·비용 한도. 운영 배포/일반 로그인 완료를 뜻하지 않습니다.
-- 실제 빌드: `tools/Build-SubmissionApk.ps1`, 결과 `apk/TodaysTrack-release.apk`. JDK17·SDK35가 필요합니다. 서명 private key/암호는 `.local` 및 Windows DPAPI로 보호하며 제출하지 않습니다.
-- [재현 안내](docs/submission/runbook.md), [검증/한계](docs/submission/verification.md), [기술 증거](docs/development/technical-validation.md), [현재 구현 계획](docs/development/implementation-plan.md).
-- `server/fixtures/reference.mp3`는 기존 음원의 대역이며 **새 생성이 아닙니다**. 실제 새 곡·영상·소스 묶음은 `submission/`에서 별도 관리합니다. 외부 게시/업로드/이메일/접수는 실행하지 않았습니다.
-
-로컬 묶음: `submission/TodaysTrack-submission.zip`, 내용: `submission/package/`. manifest.json에 APK/영상/음원/소스 해시와 Git 대신 소스 트리 SHA256을 기록합니다. [제출 체크리스트](docs/submission/submission-checklist.md)에 공식 빈 양식과 보내지 않은 이메일 초안을 연결했습니다. 테스트 화면은 2560×1440, 최종 영상은1920×1080입니다.
-
-처음 재현할 때는 `tools/Use-SubmissionToolchain.ps1` → `server/Initialize-LocalServer.ps1` → `tools/Install-MediaTool.ps1` → 서버/차량 빌드 순서로 준비합니다. 새 로컬 TLS 인증서를 만든 PC에서는 APK도 다시 빌드합니다. 기본 서버는 FIXTURE이며 유료 재현을 자동으로 시작하지 않습니다. 보호 키와 실제 현재 사용자 승인·예산 없이는 음악 dispatch를 켜지 않습니다.
-
-생성에는 PC 서버·제공자 인터넷이 필요합니다. 저장곡 재감상에는 서버/인터넷이 필요 없습니다. 정확한 위치는 차량 로컬에 남고, 음악 제공자에는 상대 순서·거리 규모·공백·음악 설정만 전송합니다. 기획서/설계 원문과 제출용 7번 참고자료 공란은 유지합니다.
-
-## 버전 관리
-
-현재 소스는 `xiuiworld/TodaysTrack` 비공개 GitHub 저장소의 `main`에서 관리합니다. 첫 커밋은0.3.0-submission(4) 상태의 기준점이며, 이전 개발 과정을 Git 이력으로 복원한 것은 아닙니다. 제출 당시 소스 트리 해시와 로컬0.2 보관본은 그대로 유지합니다.
-
-프로젝트 계정은 `.project-identity`의 `xiuiworld`이며 Git 작성자와 SSH 설정은 저장소 로컬 설정을 사용합니다. 상위 폴더의 개인 식별 가이드는 커밋하지 않습니다.
-
-APK·영상·제출 ZIP, 원본 기기 증거/좌표·로컬 DB·키·서명 정보·빌드 캐시는 Git에서 제외합니다. `submission/`, `apk/`, `validation/evidence/`의 기존 파일은 이 PC에 보존되어 있으며 새 clone에 포함되지 않습니다. 별도 upstream SDK 샘플 checkout인 `validation/vehicle-sample/`, `validation/fusedlocation-sample/` 및 도구 checkout `work/`도 제외합니다. 차량/서버 제품 소스, 테스트, 검증 스크립트와 실행 안내는 포함합니다.
+이 저장소는 심사·검토를 위해 공개합니다. 직접 작성한 코드에 별도 오픈소스 라이선스를 부여하지 않습니다. 제3자 구성 요소는 각 라이선스를 따릅니다. [제3자 고지와 자산 출처](THIRD_PARTY_NOTICES.md)

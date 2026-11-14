@@ -1,6 +1,19 @@
 # 0.4 제출 검증과 한계
 
-현재 기준은 **0.4.0-submission(5)**다. 아래는 실제 설치·기기 확인 결과이며, APK 바이트/서명·소스 ZIP 분리 빌드·패키지 해시의 최종 값은 함께 제공하는 evidence/release-verification.json과 manifest.json을 기준으로 확인한다. 과거0.3 판정은 history/verification-0.3.md에 보존한다.
+현재 기준은 **0.4.0-submission(5)**다. 아래는 기존에 확보한 실제 설치·기기 확인 결과이며, 공개 문서 정비에서 앱을 재실행하거나 유료 호출을 추가하지 않았다. 실행 코드·검증된 소스 ZIP은 `d7d99c4ed6ef6a8d8c24c605475ee6b3723e38aa`와 `submission-v0.4.0` 태그로 고정한다. main의 이후 기획서·심사용 문서 변경과 구분한다. 과거 0.3 판정은 [과거 기록](history/verification-0.3.md)에 보존한다.
+
+## 공개 파일과 동일성
+
+[GitHub Release](https://github.com/xiuiworld/TodaysTrack/releases/tag/submission-v0.4.0)의 APK·소스 ZIP과 SHA256 목록을 제공한다. [저장소 APK](../../apk/MamboCore_TodaysTrack_release.apk)는 같은 바이트에 공식 제출용 파일명을 붙였다. 원본 기기 XML·로그·DB·전체 증거 폴더는 로컬에 보존하며 GitHub 다운로드 자료로 안내하지 않는다.
+
+| 파일 | SHA256 |
+| --- | --- |
+| MamboCore_TodaysTrack_release.apk | `1f5d75bb4d0c99e9847a7bacb5dd047e0ef36db72a35d6ca89c86e4dba25b47e` |
+| TodaysTrack-source.zip | `58a2bf16e04c05be32ea1a3b7ba2e5d7f6a7fea4383cdc15cdd4b63fbaf67e95` |
+
+APK의 기존 서명 지문은 `56fd311ccd45d0dd255a6241701175f7a530a668cb243d609c51962d310c0490`이다. 서명키는 공개하지 않는다.
+
+소스 ZIP의 파일 286개를 inventory와 대조했고, 별도 추출 사본에서 서버·차량 release 빌드를 확인했다. 검증 APK와 추출 빌드 APK는 **전체 파일 해시가 다르지만 내부 ZIP 항목 198개의 내용은 모두 동일**하며 같은 서명 인증서를 확인했다. 전체 APK의 비트 단위 재현을 주장하지 않는다. 배포하는 파일은 기기 설치까지 확인한 위 원본 APK다.
 
 ## 이미 확보한 실제 증거
 

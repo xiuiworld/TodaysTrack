@@ -4,7 +4,7 @@
 
 - Product: 오늘의 트랙 · Today's Track. The folder name is `TodaysTrack`.
 - Read `docs/proposal.md` for the current proposal and `docs/reviews/2026-11-12-proposal-review.md` for unresolved evidence and review history.
-- This project is currently at the proposal stage. SDK integration, app implementation, and musical output have not been validated.
+- Submission baseline: 0.4.0-submission(5), tag submission-v0.4.0 at d7d99c4. Read docs/submission/verification.md for the verified Android/SDK/music scope and remaining limits; later main changes may be documentation-only. Do not describe the whole project as proposal-only or treat follow-up plans as implemented.
 - Both post-drive and in-drive music generation remain acceptable. The proposal's baseline is post-drive generation; realtime generation is optional.
 - Keep section 7 of the proposal blank until the user supplies or explicitly requests reference materials. Do not invent metrics, user research, implementation results, or links.
 - Agent-tool setup is not permission to start product implementation.

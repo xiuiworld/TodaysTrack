@@ -1,5 +1,7 @@
 # 흰색 시안3 UI 구현 기록
 
+> 초기 시안부터 Android 반영까지의 누적 기록이다. 현재 제출 앱은 **0.4.0-submission(5)**이며 [최종 검증](../submission/verification.md)을 기준으로 읽는다. 과거의 실행·업로드 금지나 예약 잔여량은 당시 범위이며 새 권한을 부여하지 않는다. 아래의 원본 기기 증거·.local 경로는 공개 다운로드가 아닌 로컬 보관 자료다.
+
 2026-11-12 · 사용자 승인 계획: Porcelain Split 흰색 UI, Android Views 유지, 고정 흑백 기본 표지3종, 기억한 설정으로 바로 기록 시작, 새기록 설정 별도, 기존 SDK/DB/API/곡/예산/불명 접수 보호 유지. release0.3.0-submission(4). 추가 음악 유료 생성0·Guard 기본 미사용·inline 실행·Windroid 중단·보호 원문/후속 보존·외부 업로드/메일/배포 금지. 청취는 유예 상태를 유지한다.
 
 - 이전0.2 APK/영상/ZIP은 submission/history/ui-refresh-0.2에 보존했다.

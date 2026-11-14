@@ -42,3 +42,12 @@ validation/*-probe/release-setup.json
 /validation/vehicle-sample/
 /validation/fusedlocation-sample/
 docs/design/ui-concepts/
+
+# Local editorial drafts and developer account selection; keep working copies.
+/_workspace/
+/.project-identity
+
+# Explicitly publish only the verified contest APK.
+!/apk/
+/apk/*
+!/apk/MamboCore_TodaysTrack_release.apk
