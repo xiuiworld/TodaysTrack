@@ -71,7 +71,7 @@ Android 앱의 실제 캡처입니다. 날짜·거리·곡은 **에뮬레이터�
 
 APK·소스 ZIP의 실행 코드 기준은 [d7d99c4](https://github.com/xiuiworld/TodaysTrack/tree/d7d99c4ed6ef6a8d8c24c605475ee6b3723e38aa), 고정 태그는 `submission-v0.4.0`입니다. **main에는 이후 기획서·심사용 문서 정리가 포함됩니다.** 자동 생성되는 GitHub 소스 압축과 별도로, 재빌드 검증한 소스 ZIP을 첨부합니다.
 
-검증 환경은 **Windows · PowerShell 7 · JDK 17 · Android SDK 35 · Pleos Connect 2.1.0(API 34)**입니다. 화면 규격은 **2560×1440 / 160dpi**, 실제 앱 영역은 **1682×1210**입니다. 설치·소스 빌드·기기 연결 절차는 [실행 안내](docs/submission/runbook.md)를 따릅니다.
+**검증 환경**은 Windows · PowerShell 7 · JDK 17 · Android SDK 35 · Pleos Connect 2.1.0(API 34)입니다. 화면 규격은 **2560×1440 / 160dpi**, 실제 앱 영역은 **1682×1210**입니다. 설치·소스 빌드·기기 연결 절차는 [실행 안내](docs/submission/runbook.md)를 따릅니다.
 
 > 새 설치에는 기존 사용자의 기록·곡이 포함되지 않습니다. 새 음악 생성에는 PC 서버·인터넷·별도 비용 승인이 필요합니다. 기본 설정은 유료 API를 호출하지 않으며, 이미 저장한 곡은 서버 없이 재생할 수 있습니다.
 
